@@ -96,7 +96,8 @@ public class StoreCell : MonoBehaviour {
         if (requirements.Count > 0)
         {
             remainInfo.gameObject.transform.SetParent(transform);
-            remainInfo.transform.localPosition = new Vector3(0, 0, -10);
+            remainInfo.transform.localPosition = new Vector3(0, 0, 0);
+            remainInfo.transform.SetParent(transform.parent.parent);
             remainInfo.gameObject.SetActive(true);
             List<String> remain = new List<String>();
             foreach (var req in requirements)

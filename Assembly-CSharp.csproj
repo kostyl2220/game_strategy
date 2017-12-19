@@ -5,7 +5,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>10.0.20506</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <RootNamespace></RootNamespace>
+    <RootNamespace>
+    </RootNamespace>
     <ProjectGuid>{89F7A59F-5DBA-28BF-034C-0C8987AF7A68}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
@@ -46,79 +47,79 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-     <Compile Include="Assets\Scripts\Barack.cs" />
-     <Compile Include="Assets\Scripts\BarackInfo.cs" />
-     <Compile Include="Assets\Scripts\BarackUnitInfo.cs" />
-     <Compile Include="Assets\Scripts\BuildingRemainInfo.cs" />
-     <Compile Include="Assets\Scripts\Bullet.cs" />
-     <Compile Include="Assets\Scripts\BulletInfo.cs" />
-     <Compile Include="Assets\Scripts\ButtonNetClick.cs" />
-     <Compile Include="Assets\Scripts\ButtonStoreClick.cs" />
-     <Compile Include="Assets\Scripts\CameraMove.cs" />
-     <Compile Include="Assets\Scripts\Factory.cs" />
-     <Compile Include="Assets\Scripts\FactoryDrop.cs" />
-     <Compile Include="Assets\Scripts\FactoryInfo.cs" />
-     <Compile Include="Assets\Scripts\FactoryResourceInfo.cs" />
-     <Compile Include="Assets\Scripts\GameLoad.cs" />
-     <Compile Include="Assets\Scripts\GameStatistic.cs" />
-     <Compile Include="Assets\Scripts\GenerateDetails.cs" />
-     <Compile Include="Assets\Scripts\Grid.cs" />
-     <Compile Include="Assets\Scripts\Item.cs" />
-     <Compile Include="Assets\Scripts\ItemInfo.cs" />
-     <Compile Include="Assets\Scripts\Managers\BarackManager.cs" />
-     <Compile Include="Assets\Scripts\Managers\DatabaseManager.cs" />
-     <Compile Include="Assets\Scripts\Managers\FactoryManager.cs" />
-     <Compile Include="Assets\Scripts\Managers\ItemManager.cs" />
-     <Compile Include="Assets\Scripts\Managers\Managers.cs" />
-     <Compile Include="Assets\Scripts\Managers\SessionManager.cs" />
-     <Compile Include="Assets\Scripts\Managers\StorageManager.cs" />
-     <Compile Include="Assets\Scripts\Managers\StoreManager.cs" />
-     <Compile Include="Assets\Scripts\Managers\TowerManager.cs" />
-     <Compile Include="Assets\Scripts\Managers\UnitManager.cs" />
-     <Compile Include="Assets\Scripts\MouseSelection.cs" />
-     <Compile Include="Assets\Scripts\PathfindingA.cs" />
-     <Compile Include="Assets\Scripts\ProtectionBuilding.cs" />
-     <Compile Include="Assets\Scripts\ProtectionChar.cs" />
-     <Compile Include="Assets\Scripts\ProtectionInfo.cs" />
-     <Compile Include="Assets\Scripts\PullableObject.cs" />
-     <Compile Include="Assets\Scripts\ResourceCell.cs" />
-     <Compile Include="Assets\Scripts\Selection.cs" />
-     <Compile Include="Assets\Scripts\StatPanel.cs" />
-     <Compile Include="Assets\Scripts\Store.cs" />
-     <Compile Include="Assets\Scripts\StoreCell.cs" />
-     <Compile Include="Assets\Scripts\Unit.cs" />
-     <Compile Include="Assets\Scripts\UnitInfo.cs" />
-     <Compile Include="Assets\SimpleSkeletonFree\Script\Character\PlayerController.cs" />
-     <None Include="Assets\Standard Assets\Particles\Sources\Shaders\Particle Alpha Blend (Queue +100).shader" />
-     <None Include="Assets\PB_Spider\readme.txt" />
-     <None Include="Assets\packages\Npgsql-2.2.3-net35\Npgsql.EntityFrameworkLegacy.xml" />
-     <None Include="Assets\Scripts\ProjectionShader.shader" />
-     <None Include="Assets\packages\Npgsql-2.2.3-net35\LICENSE.txt" />
-     <None Include="Assets\packages\Npgsql-2.2.3-net35\Npgsql.xml" />
- <Reference Include="UnityEngine.UI">
- <HintPath>E:/Programs/Unity2/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
- </Reference>
- <Reference Include="UnityEngine.Networking">
- <HintPath>E:/Programs/Unity2/Editor/Data/UnityExtensions/Unity/Networking/UnityEngine.Networking.dll</HintPath>
- </Reference>
- <Reference Include="UnityEngine.PlaymodeTestsRunner">
- <HintPath>E:/Programs/Unity2/Editor/Data/UnityExtensions/Unity/PlaymodeTestsRunner/UnityEngine.PlaymodeTestsRunner.dll</HintPath>
- </Reference>
- <Reference Include="UnityEngine.Analytics">
- <HintPath>E:/Programs/Unity2/Editor/Data/UnityExtensions/Unity/UnityAnalytics/UnityEngine.Analytics.dll</HintPath>
- </Reference>
- <Reference Include="UnityEngine.HoloLens">
- <HintPath>E:/Programs/Unity2/Editor/Data/UnityExtensions/Unity/UnityHoloLens/RuntimeEditor/UnityEngine.HoloLens.dll</HintPath>
- </Reference>
- <Reference Include="UnityEngine.VR">
- <HintPath>E:/Programs/Unity2/Editor/Data/UnityExtensions/Unity/UnityVR/RuntimeEditor/UnityEngine.VR.dll</HintPath>
- </Reference>
- <Reference Include="System.Data">
- <HintPath>E:/Unity/Strategy/Assets/packages/System.Data.dll</HintPath>
- </Reference>
- <Reference Include="Npgsql">
- <HintPath>E:/Unity/Strategy/Assets/packages/Npgsql-2.2.3-net35/Npgsql.dll</HintPath>
- </Reference>
+    <Compile Include="Assets\Scripts\Barack.cs" />
+    <Compile Include="Assets\Scripts\BarackInfo.cs" />
+    <Compile Include="Assets\Scripts\BarackUnitInfo.cs" />
+    <Compile Include="Assets\Scripts\BuildingRemainInfo.cs" />
+    <Compile Include="Assets\Scripts\Bullet.cs" />
+    <Compile Include="Assets\Scripts\BulletInfo.cs" />
+    <Compile Include="Assets\Scripts\ButtonNetClick.cs" />
+    <Compile Include="Assets\Scripts\ButtonStoreClick.cs" />
+    <Compile Include="Assets\Scripts\CameraMove.cs" />
+    <Compile Include="Assets\Scripts\Factory.cs" />
+    <Compile Include="Assets\Scripts\FactoryDrop.cs" />
+    <Compile Include="Assets\Scripts\FactoryInfo.cs" />
+    <Compile Include="Assets\Scripts\FactoryResourceInfo.cs" />
+    <Compile Include="Assets\Scripts\GameLoad.cs" />
+    <Compile Include="Assets\Scripts\GameStatistic.cs" />
+    <Compile Include="Assets\Scripts\GenerateDetails.cs" />
+    <Compile Include="Assets\Scripts\Grid.cs" />
+    <Compile Include="Assets\Scripts\Item.cs" />
+    <Compile Include="Assets\Scripts\ItemInfo.cs" />
+    <Compile Include="Assets\Scripts\Managers\BarackManager.cs" />
+    <Compile Include="Assets\Scripts\Managers\DatabaseManager.cs" />
+    <Compile Include="Assets\Scripts\Managers\FactoryManager.cs" />
+    <Compile Include="Assets\Scripts\Managers\ItemManager.cs" />
+    <Compile Include="Assets\Scripts\Managers\Managers.cs" />
+    <Compile Include="Assets\Scripts\Managers\SessionManager.cs" />
+    <Compile Include="Assets\Scripts\Managers\StorageManager.cs" />
+    <Compile Include="Assets\Scripts\Managers\StoreManager.cs" />
+    <Compile Include="Assets\Scripts\Managers\TowerManager.cs" />
+    <Compile Include="Assets\Scripts\Managers\UnitManager.cs" />
+    <Compile Include="Assets\Scripts\MouseSelection.cs" />
+    <Compile Include="Assets\Scripts\PathfindingA.cs" />
+    <Compile Include="Assets\Scripts\ProtectionBuilding.cs" />
+    <Compile Include="Assets\Scripts\ProtectionChar.cs" />
+    <Compile Include="Assets\Scripts\ProtectionInfo.cs" />
+    <Compile Include="Assets\Scripts\PullableObject.cs" />
+    <Compile Include="Assets\Scripts\ResourceCell.cs" />
+    <Compile Include="Assets\Scripts\Selection.cs" />
+    <Compile Include="Assets\Scripts\StatPanel.cs" />
+    <Compile Include="Assets\Scripts\Store.cs" />
+    <Compile Include="Assets\Scripts\StoreCell.cs" />
+    <Compile Include="Assets\Scripts\Unit.cs" />
+    <Compile Include="Assets\Scripts\UnitInfo.cs" />
+    <Compile Include="Assets\SimpleSkeletonFree\Script\Character\PlayerController.cs" />
+    <None Include="Assets\Standard Assets\Particles\Sources\Shaders\Particle Alpha Blend (Queue +100).shader" />
+    <None Include="Assets\PB_Spider\readme.txt" />
+    <None Include="Assets\packages\Npgsql-2.2.3-net35\Npgsql.EntityFrameworkLegacy.xml" />
+    <None Include="Assets\Scripts\ProjectionShader.shader" />
+    <None Include="Assets\packages\Npgsql-2.2.3-net35\LICENSE.txt" />
+    <None Include="Assets\packages\Npgsql-2.2.3-net35\Npgsql.xml" />
+    <Reference Include="UnityEngine.UI">
+      <HintPath>E:/Programs/Unity2/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.Networking">
+      <HintPath>E:/Programs/Unity2/Editor/Data/UnityExtensions/Unity/Networking/UnityEngine.Networking.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.PlaymodeTestsRunner">
+      <HintPath>E:/Programs/Unity2/Editor/Data/UnityExtensions/Unity/PlaymodeTestsRunner/UnityEngine.PlaymodeTestsRunner.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.Analytics">
+      <HintPath>E:/Programs/Unity2/Editor/Data/UnityExtensions/Unity/UnityAnalytics/UnityEngine.Analytics.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.HoloLens">
+      <HintPath>E:/Programs/Unity2/Editor/Data/UnityExtensions/Unity/UnityHoloLens/RuntimeEditor/UnityEngine.HoloLens.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.VR">
+      <HintPath>E:/Programs/Unity2/Editor/Data/UnityExtensions/Unity/UnityVR/RuntimeEditor/UnityEngine.VR.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data">
+      <HintPath>E:/Unity/game_strategy/Assets/packages/System.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="Npgsql">
+      <HintPath>E:/Unity/game_strategy/Assets/packages/Npgsql-2.2.3-net35/Npgsql.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -128,5 +129,4 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-  
 </Project>
