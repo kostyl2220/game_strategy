@@ -82,7 +82,7 @@ public class GameStatistic : MonoBehaviour {
             TotalUnitsPower.text = DPS;
         }
     }
-
+    
     public void GetCheapestTower()
     {
         double radius = Convert.ToDouble(InputRadius.text);

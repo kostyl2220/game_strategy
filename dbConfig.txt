@@ -1,0 +1,5 @@
+Server=127.0.0.1;
+Port=5433;
+User Id=postgres;
+Password=Zkos567895kosZ;
+Database=Kursach;

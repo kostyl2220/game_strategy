@@ -142,31 +142,53 @@ public class MouseSelection : MonoBehaviour {
 
     public void FindPath(Vector3 EndPos)
     {
-        /* Vector2 start_pos = grid.GetPointByPosition(GetUnitCenter());
-        Vector2 end_pos = grid.GetPointByPosition(hit.point);
-
-        Debug.Log(start_pos);
-
-        pathfinding.SetGrid(grid.GetGrid());
-        Vector2 unit_center = GetUnitCenter();
-        List<Node> Nodes = pathfinding.FindPath(start_pos, end_pos);
-        grid.CreateGreenLine(Nodes);
-        MoveByPoints(Nodes);*/
-        Vector2 end_pos = grid.GetPointByPosition(EndPos);
-        if (grid.InRangePoint(end_pos.x + 1, end_pos.y + 1))
+        Vector2 center_end_pos = grid.GetPointByPosition(EndPos);
+        List<Vector3> Cells = GetMoveCells(selected_units[0].transform.position, EndPos, selected_units.Count);
+        if (grid.InRangePoint(center_end_pos.x + 1, center_end_pos.y + 1))
         {
             pathfinding.SetGrid(grid.GetGrid());
 
-            foreach (var unit in selected_units)
+            for (int i = 0; i < selected_units.Count; ++i)
             {
+                Unit unit = selected_units[i];
+
                 Vector2 start_pos = grid.GetPointByPosition(unit.transform.position);
+                Vector2 end_pos = grid.GetPointByPosition(Cells[i]);
+                Vector2 EndDirection = Cells[i] - unit.transform.position;
                 List<Node> Nodes = pathfinding.FindPath(start_pos, end_pos);
+                Nodes.Add(new Node(new Vector2(Cells[i].x, Cells[i].z), null));
                 Nodes.RemoveAt(0);
-                //grid.CreateGreenLine(Nodes);
                 unit.SetGrid(grid);
+                unit.SetEndDirection(EndDirection);
                 unit.MoveByPoints(Nodes);
             }
         }
+    }
+
+    public List<Vector3> GetMoveCells(Vector3 start_pos, Vector3 end_pos, int unitCount)
+    {
+        List<Vector3> PosList = new List<Vector3>();
+        Vector3 direction = (end_pos - start_pos).normalized;
+        Vector3 right = Quaternion.Euler(0, 90f, 0) * direction;
+        int countInLine = (int)Mathf.Ceil(Mathf.Sqrt(unitCount));
+        Debug.Log(countInLine);
+        for (int i = 0; i < countInLine; ++i)
+        {
+            float MoveX = i - (countInLine - 1) / 2;
+
+            for (int j = 0; j < countInLine; ++j)
+            {
+                if (unitCount == 0)
+                    return PosList;
+
+                float MoveZ = j - (countInLine - 1) / 2;
+
+                Vector3 pos = end_pos - direction * j + right * i;
+                PosList.Add(pos);
+                unitCount--;
+            }
+        }
+        return PosList; 
     }
 
     public void MoveByPoints(List<Node> Nodes)

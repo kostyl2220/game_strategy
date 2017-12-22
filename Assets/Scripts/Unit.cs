@@ -30,6 +30,8 @@ public class Unit : Item {
     private Coroutine attackCoroutine;
 
     private UnitInfo unit_info;
+
+    private Vector3 EndDirection;
     // Use this for initialization
     void Start () {
         _charController = transform.GetComponent<CharacterController>();
@@ -44,7 +46,7 @@ public class Unit : Item {
             direction.y = 0;
 
             //Debug.Log(direction.magnitude);
-            if (direction.magnitude < 0.5f)
+            if (direction.magnitude < 0.1f)
             {
                 if (movePoints.Count == 0)
                 {
@@ -110,9 +112,17 @@ public class Unit : Item {
 
     private void SetNextMovePoint()
     {
-        int x = (int)movePoints[0].GetPosition().x + 1;
-        int z = (int)movePoints[0].GetPosition().y + 1;
-        destination = grid.GetPositionByXZ(x, z, 0);
+        if (movePoints.Count > 1)
+        {
+            int x = (int)movePoints[0].GetPosition().x + 1;
+            int z = (int)movePoints[0].GetPosition().y + 1;
+            destination = grid.GetPositionByXZ(x, z, 0);
+        }
+        else
+        {
+            Vector2 EndPos = movePoints[0].GetPosition();
+            destination = new Vector3(EndPos.x, grid.transform.position.y, EndPos.y);
+        }
         movePoints.RemoveAt(0);
     }
 
@@ -145,6 +155,11 @@ public class Unit : Item {
             Animation.Stop();
             Animation.Play(RunAnim);
         }
+    }
+
+    public void SetEndDirection(Vector3 EndDir)
+    {
+        EndDirection = EndDir;
     }
 
     public override Vector2 GetPosition()

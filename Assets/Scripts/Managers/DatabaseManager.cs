@@ -17,12 +17,10 @@ public class DatabaseManager : MonoBehaviour, IGameManager
 
     public void Startup()
     {
+
         try
         {
-            string connstring = String.Format("Server={0};Port={1};" +
-                "User Id={2};Password={3};Database={4};",
-                "127.0.0.1", "5433", "postgres", "Zkos567895kosZ", "Kursach");
-            // Making connection with Npgsql provider
+            string connstring = System.IO.File.ReadAllText("dbConfig.txt");
             conn = new NpgsqlConnection(connstring);
             conn.Open();
         }
