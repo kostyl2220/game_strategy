@@ -377,7 +377,7 @@ public class Grid : MonoBehaviour {
         return (int)Mathf.Ceil(CountInZ / 2f + diff);
     }
 
-    public Vector2 GetPointByPosition(Vector3 Position)
+    public Vector2 GetPointByPosition(Vector3 Position) // numeration from 0
     {
         Vector3 center = transform.position;
         float diffX = (Position.x - center.x) / Size;
