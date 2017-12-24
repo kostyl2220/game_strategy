@@ -16,10 +16,12 @@ public class MouseSelection : MonoBehaviour {
 
     private List<Unit> selected_units;
     public static PathfindingA pathfinding;
+    public static Spot spotAlgorithm;
     // Use this for initialization
     void Start () {
         selected_units = new List<Unit>();
         pathfinding = new PathfindingA(grid.CountInX, grid.CountInZ, grid.GetGrid());
+        spotAlgorithm = new Spot();
     }
 
     // Update is called once per frame
@@ -122,7 +124,6 @@ public class MouseSelection : MonoBehaviour {
         if (Physics.Raycast(ray, out hit, 20f, layer_mask))
         {
             FindPath(hit.point);
-            //MoveUnits(hit.point);
         }
     }
 
@@ -143,9 +144,15 @@ public class MouseSelection : MonoBehaviour {
     public void FindPath(Vector3 EndPos)
     {
         Vector2 center_end_pos = grid.GetPointByPosition(EndPos);
-        List<Vector3> Cells = GetMoveCells(selected_units[0].transform.position, EndPos, selected_units.Count);
         if (grid.InRangePoint(center_end_pos.x + 1, center_end_pos.y + 1))
         {
+            Vector3 moveDirection = (EndPos - selected_units[0].transform.position).normalized;
+            List<Spot.UnitPoint> Spot = spotAlgorithm.MakeSpot(moveDirection, EndPos, grid, selected_units.Count);
+            if (Spot.Count == 0)
+            {
+                Debug.Log("Can't move");
+                return;
+            }
             pathfinding.SetGrid(grid.GetGrid());
 
             for (int i = 0; i < selected_units.Count; ++i)
@@ -153,10 +160,10 @@ public class MouseSelection : MonoBehaviour {
                 Unit unit = selected_units[i];
 
                 Vector2 start_pos = grid.GetPointByPosition(unit.transform.position);
-                Vector2 end_pos = grid.GetPointByPosition(Cells[i]);
-                Vector2 EndDirection = Cells[i] - unit.transform.position;
+                Vector2 end_pos = new Vector2(Spot[i].X, Spot[i].Z);
+                Vector2 EndDirection = Spot[i].RealPos - unit.transform.position;
                 List<Node> Nodes = pathfinding.FindPath(start_pos, end_pos);
-                Nodes.Add(new Node(new Vector2(Cells[i].x, Cells[i].z), null));
+                Nodes.Add(new Node(new Vector2(Spot[i].RealPos.x, Spot[i].RealPos.z), null));
                 Nodes.RemoveAt(0);
                 unit.SetGrid(grid);
                 unit.SetEndDirection(EndDirection);
@@ -165,10 +172,9 @@ public class MouseSelection : MonoBehaviour {
         }
     }
 
-    public List<Vector3> GetMoveCells(Vector3 start_pos, Vector3 end_pos, int unitCount)
+    public List<Vector3> GetMoveCells(Vector3 direction, Vector3 end_pos, int unitCount)
     {
         List<Vector3> PosList = new List<Vector3>();
-        Vector3 direction = (end_pos - start_pos).normalized;
         Vector3 right = Quaternion.Euler(0, 90f, 0) * direction;
         int countInLine = (int)Mathf.Ceil(Mathf.Sqrt(unitCount));
         Debug.Log(countInLine);
@@ -188,43 +194,7 @@ public class MouseSelection : MonoBehaviour {
                 unitCount--;
             }
         }
-        return PosList; 
-    }
-
-    public void MoveByPoints(List<Node> Nodes)
-    {
-        Vector2 StartMovePos = Nodes[0].GetPosition();
-        Vector2 EndMovePos = Nodes[Nodes.Count - 1].GetPosition();
-        foreach(var unit in selected_units)
-        {
-            Vector2 start_local_pos = grid.GetPointByPosition(unit.transform.position);
-            Vector2 end_local_pos = start_local_pos + EndMovePos - StartMovePos;
-
-            pathfinding.FindPath(start_local_pos, StartMovePos);
-        }
-    }
-
-    public void MoveUnits(Vector3 position)
-    {
-        int unitCount = selected_units.Count;
-        int countInLine = (int)Mathf.Ceil(Mathf.Sqrt(unitCount));
-
-
-        for (int i = 0; i < countInLine; ++i)
-        {
-            float MoveX = i - (countInLine - 1) / 2;
-            for (int j = 0; j < countInLine; ++j)
-            {
-                if (unitCount == 0)
-                    return;
-
-                float MoveZ = j - (countInLine - 1) / 2;
-                Vector3 newUnitPos = new Vector3(position.x + MoveX * unitDistanceX, position.y, position.z + MoveZ * unitDistanceZ);
-                selected_units[i * countInLine + j].Move(newUnitPos);
-
-                unitCount--;
-            }
-        }
+        return PosList;
     }
 
     public bool IsWithinSelectionBounds(GameObject gameObject)

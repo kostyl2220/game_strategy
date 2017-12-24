@@ -314,6 +314,14 @@ public class Grid : MonoBehaviour {
         }
     }
 
+    public void PlaceSpot(int x, int z, bool walkable)
+    {
+        if (walkable)
+            GetPlaneFromPool(GreenPlane, GetPositionByXZ(x + 1, z + 1, 0.02f));
+        else
+            GetPlaneFromPool(RedPlane, GetPositionByXZ(x + 1, z + 1, 0.02f));
+    }
+
     void MixGrids(int NewID)
     {
         for (int x = activeGrid.X; x < activeGrid.X + activeGrid.SizeX; ++x)
