@@ -12,6 +12,7 @@ public class Spot {
 
     private int RectSize;
     private int StartRectSize;
+    private Grid grid;
 
     private bool TryReverse;
 
@@ -78,6 +79,7 @@ public class Spot {
 
     public List<UnitPoint> MakeSpot(Vector3 direction, Vector3 Center, Grid grid, int unitCount)
     {
+        this.grid = grid;
         TryReverse = false;
         List<Vector3> EndCells = GetMoveCells(direction, Center, unitCount);
         spotsArray.Clear();
@@ -86,31 +88,33 @@ public class Spot {
         pointsToCover.Clear();
         CoveredPoints.Clear();
         foreach (var Cell in EndCells)
-            pointsToCover.Add(new UnitPoint(grid, Cell));
+        {
+            AddToCover(new UnitPoint(grid, Cell));
+        }
 
         Vector2 startPos = grid.GetPointByPosition(Center);
         AddToSpot(new SpotPoint(startPos, grid.GetGrid()[(int)startPos.x, (int)startPos.y] == 0));
 
-        while (CoveredPoints.Count != unitCount)
+        while (CoveredPoints.Count < unitCount)
         {
-            while (pointsToCover.Count != 0 && CoveredPoints.Count != unitCount && HasActiveSpot())
+            while (pointsToCover.Count != 0 && CoveredPoints.Count < unitCount && HasActiveSpot())
             {
                 SpotPoint point = GetCurrentActiveSpot();
                 List<SpotPoint> Neighbours = GetNeighbours(point, grid);
                 AddToSpot(Neighbours, unitCount);
             }
 
-            if (CoveredPoints.Count != unitCount)
+            if (CoveredPoints.Count < unitCount)
             {
                 Debug.Log("Not covered");
                 if (!TryReverse)
                 {
                     Debug.Log("Try reverse");
                     List<Vector3> ReversedCells = GetReversedMoveCells(direction, Center, unitCount);
-                    foreach (var cell in ReversedCells) 
-                        pointsToCover.Add(new UnitPoint(grid, cell));
+                    foreach (var cell in ReversedCells)
+                        AddToCover(new UnitPoint(grid, cell));
 
-                    CheckNewPointsToCover();
+                    CheckNewPointsToCover(unitCount);
                     TryReverse = true;
                 }
                 else
@@ -118,32 +122,42 @@ public class Spot {
                     RectSize += 1;
                     Debug.Log(String.Format("Size of rect {0}", RectSize));
                     ExpandPoints(direction, Center, grid);
-                    CheckNewPointsToCover();
+                    CheckNewPointsToCover(unitCount);
                 }
             }
 
             if (!HasActiveSpot())
             {
+                /*foreach (var line in spotsArray.Values)
+                {
+                    foreach (SpotPoint point in line.Values)
+                    {
+                        grid.PlaceSpot(point.X, point.Z, point.Walkable);
+                    }
+                } */
                 return new List<UnitPoint>();
             }
         }
 
-        foreach (var line in spotsArray.Values)
+        /*foreach (var line in spotsArray.Values)
         {
             foreach (SpotPoint point in line.Values)
             {
                 grid.PlaceSpot(point.X, point.Z, point.Walkable);
             }
-        }
+        }*/
   
         return CoveredPoints;
     }
 
-    void CheckNewPointsToCover()
+    void CheckNewPointsToCover(int unitCount)
     {
         int index = 0;
         while (index < pointsToCover.Count)
         {
+            if (CoveredPoints.Count >= unitCount)
+                return;
+
             UnitPoint point = pointsToCover[index];
 
             if (!spotsArray.ContainsKey(point.X))
@@ -164,7 +178,7 @@ public class Spot {
                 pointsToCover.RemoveAt(index);
             }
             else
-                ++index;
+                pointsToCover.RemoveAt(index);
         }
     }
 
@@ -172,27 +186,44 @@ public class Spot {
     {
         Vector3 right = Quaternion.Euler(0, 90f, 0) * direction;
 
+        /*for (int i = 0; i < RectSize; ++i)
+        {
+            float MoveZ = i - (RectSize - 1) / 2.0f;
+
+            for (int j = 0; j < RectSize; ++j)
+            {
+                if (i > 0 && i < RectSize - 1 &&
+                    j > 0 && j < RectSize - 1)
+                    continue;
+
+                float MoveX = j - (RectSize - 1) / 2f;
+
+                Vector3 pos = end_pos - direction * MoveZ - right * MoveX;
+                AddToCover(new UnitPoint(grid, pos));
+            }
+        }*/
+
         //left and right points
-        float MoveX = (2 * RectSize - 1 - StartRectSize) / 2f;
-        for (int i = 0; i < RectSize; ++i)
-        {
-            float MoveZ = i - (StartRectSize - 1) / 2f;
+         float MoveX = (2 * RectSize - 1 - StartRectSize) / 2f;
+         for (int i = 0; i < RectSize; ++i)
+         {
+             float MoveZ = i - (StartRectSize - 1) / 2f;
 
-            Vector3 pos = end_pos - direction * MoveZ - right * MoveX;
-            pointsToCover.Add(new UnitPoint(grid, pos));
-            pos = end_pos - direction * MoveZ + right * MoveX;
-            pointsToCover.Add(new UnitPoint(grid, pos));
-        }
+             Vector3 pos = end_pos - direction * MoveZ + right * MoveX;
+             AddToCover(new UnitPoint(grid, pos));
+             Vector3 pos2 = end_pos - direction * MoveZ + right * MoveX;
+             AddToCover(new UnitPoint(grid, pos2));
+         }
 
-        //back positions
-        float MoveZ2 = RectSize / 2f;
-        int count_of_ells = (RectSize - 1) * 2 - StartRectSize;
-        for (int i = 0; i < count_of_ells; ++i)
-        {
-            float MoveX2 = i - (count_of_ells - 1) / 2f;
-            Vector3 pos = end_pos - direction * MoveZ2 - right * MoveX2;
-            pointsToCover.Add(new UnitPoint(grid, pos));
-        }
+         //back positions
+         float MoveZ2 = RectSize / 2f;
+         int count_of_ells = (RectSize - 1) * 2 - StartRectSize;
+         for (int i = 0; i < count_of_ells; ++i)
+         {
+             float MoveX2 = i - (count_of_ells - 1) / 2f;
+             Vector3 pos = end_pos - direction * MoveZ2 - right * MoveX2;
+             AddToCover(new UnitPoint(grid, pos));
+         }
     }
 
     public List<Vector3> GetMoveCells(Vector3 direction, Vector3 end_pos, int unitCount)
@@ -203,14 +234,14 @@ public class Spot {
         RectSize = StartRectSize;
         for (int i = 0; i < RectSize; ++i)
         {
-            float MoveX = i - (RectSize - 1) / 2.0f;
+            float MoveZ = i - (RectSize - 1) / 2.0f;
 
             for (int j = 0; j < RectSize; ++j)
             {
                 if (unitCount == 0)
                     return PosList;
 
-                float MoveZ = j - (RectSize - 1) / 2f;
+                float MoveX = j - (RectSize - 1) / 2f;
 
                 Vector3 pos = end_pos - direction * MoveZ - right * MoveX;
                 PosList.Add(pos);
@@ -227,14 +258,14 @@ public class Spot {
         Vector3 right = Quaternion.Euler(0, 90f, 0) * direction;
         for (int i = 0; i < StartRectSize; ++i)
         {
-            float MoveX = i - (StartRectSize - 1) / 2.0f;
+            float MoveZ = i - (StartRectSize - 1) / 2.0f;
 
             for (int j = 0; j < StartRectSize; ++j)
             {
                 if (unitCount == 0)
                     return PosList;
 
-                float MoveZ = j - (StartRectSize - 1) / 2f;
+                float MoveX = j - (StartRectSize - 1) / 2f;
 
                 Vector3 pos = end_pos + direction * MoveZ + right * MoveX;
                 PosList.Add(pos);
@@ -247,6 +278,12 @@ public class Spot {
     bool HasActiveSpot()
     {
         return activeSpots.Count != 0;
+    }
+
+    void AddToCover(UnitPoint point)
+    {
+        if (grid.InRangePoint(point.X + 1, point.Z + 1))
+            pointsToCover.Add(point);
     }
 
     SpotPoint GetCurrentActiveSpot()
@@ -278,7 +315,7 @@ public class Spot {
     {
         foreach(var point in newPoints)
         {
-            if (CoveredPoints.Count == unitCount)
+            if (CoveredPoints.Count >= unitCount)
                 return;
             AddToSpot(point);
         }
