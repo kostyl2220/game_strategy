@@ -4,10 +4,14 @@ using UnityEngine;
 using Npgsql;
 using System;
 using System.Data;
+using Mono.Data.Sqlite;
 
 public class DatabaseManager : MonoBehaviour, IGameManager
 {
-    private NpgsqlConnection conn;
+    //private NpgsqlConnection conn;
+    private SqliteConnection sqliteconn;
+    private SqliteCommand com;
+    private String sqConnectionString = "URI=file:data.db;";
 
     public ManagerStatus status { get; private set;}
     // Use this for initialization
@@ -15,14 +19,33 @@ public class DatabaseManager : MonoBehaviour, IGameManager
 		
 	}
 
+    void OnFocus()
+    {
+        Debug.Log("Hello");
+    }
+
     public void Startup()
     {
-
+  
         try
         {
-            string connstring = System.IO.File.ReadAllText("dbConfig.txt");
-            conn = new NpgsqlConnection(connstring);
-            conn.Open();
+            //string connstring = System.IO.File.ReadAllText("dbConfig.txt");
+            //conn = new NpgsqlConnection(connstring);
+            //conn.Open();
+
+            using (sqliteconn = new SqliteConnection(sqConnectionString)) { 
+                sqliteconn.Open();
+
+
+                com = new SqliteCommand(sqliteconn);
+                com.CommandText = "INSERT INTO Sessions(Name, user_id) VALUES(\"session2\", 1);";
+                com.ExecuteNonQuery();
+                com.Dispose();
+            }
+
+            sqliteconn = new SqliteConnection(sqConnectionString);
+            sqliteconn.Open();
+
         }
         catch (Exception msg)
         {
@@ -32,11 +55,32 @@ public class DatabaseManager : MonoBehaviour, IGameManager
         status = ManagerStatus.Started;
     } 
 
-    public NpgsqlDataReader GetQuery(String sql)
+    public IDataReader GetQuery(String sql)
     {
-        NpgsqlCommand command = new NpgsqlCommand(sql, conn);
-        NpgsqlDataReader dr = command.ExecuteReader();
+        //NpgsqlCommand command = new NpgsqlCommand(sql, conn);
+        //IDataReader dr = command.ExecuteReader();
+        return null;
+    }
+
+    public IDataReader GetSQLiteQuery(String sql)
+    {
+        SqliteCommand com = sqliteconn.CreateCommand();
+        com.CommandText = sql;
+        SqliteDataReader dr = com.ExecuteReader();
+        //command.Dispose();
         return dr;
+    }
+
+    public void PutSQLiteQuery(String sql)
+    {
+        SqliteCommand com = sqliteconn.CreateCommand();
+        com.CommandText = sql;
+        SqliteDataReader dr = com.ExecuteReader();
+        while (dr.Read())
+        {
+
+        }
+        dr.Close();
     }
 
     // Update is called once per frame
@@ -46,6 +90,7 @@ public class DatabaseManager : MonoBehaviour, IGameManager
 
     public void Shutdowm()
     {
-        conn.Close();
+        //conn.Close();
+        sqliteconn.Close();
     }
 }

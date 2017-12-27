@@ -114,6 +114,9 @@
  <Reference Include="UnityEngine.VR">
  <HintPath>E:/Programs/Unity2/Editor/Data/UnityExtensions/Unity/UnityVR/RuntimeEditor/UnityEngine.VR.dll</HintPath>
  </Reference>
+ <Reference Include="Mono.Data.Sqlite">
+ <HintPath>E:/Unity/game_strategy/Assets/packages/Mono.Data.Sqlite.dll</HintPath>
+ </Reference>
  <Reference Include="System.Data">
  <HintPath>E:/Unity/game_strategy/Assets/packages/System.Data.dll</HintPath>
  </Reference>

@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using UnityEngine;
 
 public class FactoryManager : MonoBehaviour, IGameManager {
@@ -18,23 +19,26 @@ public class FactoryManager : MonoBehaviour, IGameManager {
     public void Startup()
     {
         factories = new Dictionary<int, Dictionary<int, Dictionary<int, int[]>>>();
-        NpgsqlDataReader dr = Managers.Database.GetQuery("SELECT * FROM get_factory_level(); ");
-        while (dr.Read())
+        using (IDataReader dr = Managers.Database.GetSQLiteQuery("SELECT f.item_id, fl.level, f.resource_id, fl.count, fl.time FROM Factories as f JOIN FactoryLevels AS fl ON fl.factory_id = f.id ORDER BY item_id, level;"))
         {
-            int item_id = Convert.ToInt32(dr["item_id"]);
-            int level = Convert.ToInt32(dr["level"]);
-            int resource = Convert.ToInt32(dr["resource_id"]);
-            int count = Convert.ToInt32(dr["count"]);
-            int time = Convert.ToInt32(dr["tm"]);
-            if (!factories.ContainsKey(item_id))
+            while (dr.Read())
             {
-                factories[item_id] = new Dictionary<int, Dictionary<int, int[]>>();
+                int item_id = Convert.ToInt32(dr["item_id"]);
+                int level = Convert.ToInt32(dr["level"]);
+                int resource = Convert.ToInt32(dr["resource_id"]);
+                int count = Convert.ToInt32(dr["count"]);
+                int time = Convert.ToInt32(dr["time"]);
+                if (!factories.ContainsKey(item_id))
+                {
+                    factories[item_id] = new Dictionary<int, Dictionary<int, int[]>>();
+                }
+                if (!factories[item_id].ContainsKey(level))
+                {
+                    factories[item_id][level] = new Dictionary<int, int[]>();
+                }
+                factories[item_id][level][resource] = new int[] { count, time };
             }
-            if (!factories[item_id].ContainsKey(level))
-            {
-                factories[item_id][level] = new Dictionary<int, int[]>();
-            }
-            factories[item_id][level][resource] =  new int[]{ count, time };
+            dr.Close();
         }
 
         InitFactories();

@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -31,9 +32,9 @@ public class GameStatistic : MonoBehaviour {
 	void Start () {
         opened = false;
         statPanel.gameObject.SetActive(false);
-        GetHardestRes();
-        GetMostPowerFullUnit();
-        GetTotalDPS();
+        //GetHardestRes();
+        //GetMostPowerFullUnit();
+        //GetTotalDPS();
     }
 	
 	// Update is called once per frame
@@ -50,7 +51,7 @@ public class GameStatistic : MonoBehaviour {
     void GetHardestRes()
     {
         String name = "";
-        NpgsqlDataReader dr = Managers.Database.GetQuery("SELECT * FROM get_hardest_res()");
+        IDataReader dr = Managers.Database.GetQuery("SELECT * FROM get_hardest_res()");
         while (dr.Read())
         {
             name = dr["res"].ToString();
@@ -60,7 +61,7 @@ public class GameStatistic : MonoBehaviour {
 
     void GetMostPowerFullUnit()
     {
-        NpgsqlDataReader dr = Managers.Database.GetQuery(String.Format("SELECT * FROM get_most_dangerous_unit({0})", Managers.Session.GetSession()));
+        IDataReader dr = Managers.Database.GetQuery(String.Format("SELECT * FROM get_most_dangerous_unit({0})", Managers.Session.GetSession()));
         while (dr.Read())
         {
             String Name = dr["name"].ToString();
@@ -74,7 +75,7 @@ public class GameStatistic : MonoBehaviour {
 
     void GetTotalDPS()
     {
-        NpgsqlDataReader dr = Managers.Database.GetQuery(String.Format("SELECT get_total_dps({0}) AS val", Managers.Session.GetSession()));
+        IDataReader dr = Managers.Database.GetQuery(String.Format("SELECT get_total_dps({0}) AS val", Managers.Session.GetSession()));
 
         while (dr.Read())
         {
@@ -87,7 +88,7 @@ public class GameStatistic : MonoBehaviour {
     {
         double radius = Convert.ToDouble(InputRadius.text);
         double dps = Convert.ToDouble(InputDPS.text);
-        NpgsqlDataReader dr = Managers.Database.GetQuery(String.Format("SELECT * FROM get_cheapest_tower({0}, {1});", radius, dps));
+        IDataReader dr = Managers.Database.GetQuery(String.Format("SELECT * FROM get_cheapest_tower({0}, {1});", radius, dps));
         while (dr.Read())
         {
             String Name = dr["_name"].ToString();

@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using UnityEngine;
 
 public class BarackManager : MonoBehaviour, IGameManager {
@@ -18,20 +19,23 @@ public class BarackManager : MonoBehaviour, IGameManager {
     {
         UnitList = new Dictionary<int, Dictionary<int, List<int>>>();
 
-        NpgsqlDataReader dr = Managers.Database.GetQuery("SELECT * FROM UnitFactory;");
-        while (dr.Read())
+        using (IDataReader dr = Managers.Database.GetSQLiteQuery("SELECT * FROM UnitFactory;"))
         {
-            int item_id = Convert.ToInt32(dr["item_id"]);
-            int level = Convert.ToInt32(dr["level"]);
-            int unit_id = Convert.ToInt32(dr["unit_id"]);
+            while (dr.Read())
+            {
+                int item_id = Convert.ToInt32(dr["item_id"]);
+                int level = Convert.ToInt32(dr["level"]);
+                int unit_id = Convert.ToInt32(dr["unit_id"]);
 
-            if (!UnitList.ContainsKey(item_id))
-                UnitList[item_id] = new Dictionary<int, List<int>>();
+                if (!UnitList.ContainsKey(item_id))
+                    UnitList[item_id] = new Dictionary<int, List<int>>();
 
-            if (!UnitList[item_id].ContainsKey(level))
-                UnitList[item_id][level] = new List<int>();
+                if (!UnitList[item_id].ContainsKey(level))
+                    UnitList[item_id][level] = new List<int>();
 
-            UnitList[item_id][level].Add(unit_id);
+                UnitList[item_id][level].Add(unit_id);
+            }
+            dr.Close();
         }
 
         status = ManagerStatus.Started;

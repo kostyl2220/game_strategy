@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using UnityEngine;
 
 public class StoreManager : MonoBehaviour, IGameManager {
@@ -13,19 +14,21 @@ public class StoreManager : MonoBehaviour, IGameManager {
     public void Startup()
     {
         itemPrices = new Dictionary<int, Dictionary<int, Dictionary<int, int>>> ();
-        NpgsqlDataReader dr = Managers.Database.GetQuery("SELECT * FROM ItemPrices;");
-
-        while (dr.Read())
+        using (IDataReader dr = Managers.Database.GetSQLiteQuery("SELECT * FROM ItemPrices;"))
         {
-            int item_id = Convert.ToInt32(dr["item_id"]);
-            int level = Convert.ToInt32(dr["level"]);
-            if (!itemPrices.ContainsKey(item_id))
-                itemPrices[item_id] = new Dictionary<int, Dictionary<int, int>>();
-            if (!itemPrices[item_id].ContainsKey(level))
-                itemPrices[item_id][level] = new Dictionary<int, int>();
-            itemPrices[item_id][level][Convert.ToInt32(dr["resource_id"])] = Convert.ToInt32(dr["count"]);
-        }
 
+            while (dr.Read())
+            {
+                int item_id = Convert.ToInt32(dr["item_id"]);
+                int level = Convert.ToInt32(dr["level"]);
+                if (!itemPrices.ContainsKey(item_id))
+                    itemPrices[item_id] = new Dictionary<int, Dictionary<int, int>>();
+                if (!itemPrices[item_id].ContainsKey(level))
+                    itemPrices[item_id][level] = new Dictionary<int, int>();
+                itemPrices[item_id][level][Convert.ToInt32(dr["resource_id"])] = Convert.ToInt32(dr["count"]);
+            }
+            dr.Close();
+        }
         store.SetItems(Managers.Items.GetStoreItems());
         inner_store = store;
         status = ManagerStatus.Started;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Npgsql;
 using System;
+using System.Data;
 
 public class ItemManager : MonoBehaviour, IGameManager {
     public ManagerStatus status { get; private set; }
@@ -48,20 +49,24 @@ public class ItemManager : MonoBehaviour, IGameManager {
         itemStorage = new Dictionary<int, StoredItem>();
         ItemPool = new Dictionary<int, PooledItem>();
         ObjectPool = new Dictionary<int, Item>();
-        NpgsqlDataReader dr = Managers.Database.GetQuery("SELECT * FROM Items ORDER BY Name;");
-        while (dr.Read())
+        using (IDataReader dr = Managers.Database.GetSQLiteQuery("SELECT * FROM Items ORDER BY Name;"))
         {
-            int item_id = Convert.ToInt32(dr["id"]);
-            Item prefab = Instantiate(Resources.Load<Item>(dr["prefab"].ToString()));
-            prefab.SetId(item_id);
-            prefab.Name = dr["Name"].ToString();
-            prefab.SizeX = Convert.ToInt32(dr["size_x"]);
-            prefab.SizeZ = Convert.ToInt32(dr["size_z"]);
-            prefab.material = Resources.Load<Material>(dr["icon"].ToString());
-            prefab.transform.parent = pool.transform;
-            prefab.MaxHP = Convert.ToDouble(dr["HP"]);
-            prefab.gameObject.SetActive(false);
-            itemStorage[item_id] = new StoredItem(prefab, Convert.ToBoolean(dr["inStore"]));
+            while (dr.Read())
+            {
+                int item_id = Convert.ToInt32(dr["id"]);
+                Item prefab = Instantiate(Resources.Load<Item>(dr["prefab"].ToString()));
+                prefab.SetId(item_id);
+                prefab.Name = dr["Name"].ToString();
+                prefab.SizeX = Convert.ToInt32(dr["size_x"]);
+                prefab.SizeZ = Convert.ToInt32(dr["size_z"]);
+                prefab.material = Resources.Load<Material>(dr["icon"].ToString());
+                prefab.transform.parent = pool.transform;
+                prefab.MaxHP = Convert.ToDouble(dr["HP"]);
+                prefab.gameObject.SetActive(false);
+                itemStorage[item_id] = new StoredItem(prefab, Convert.ToBoolean(dr["inStore"]));
+            }
+
+            dr.Close();
         }
 
         staticItemPool = ItemObjectPool;
@@ -110,8 +115,10 @@ public class ItemManager : MonoBehaviour, IGameManager {
 
     static void SaveItemToDatabase(int item_id)
     {
-        NpgsqlDataReader dr = Managers.Database.GetQuery(String.Format("SELECT add_item_count({0}, {1}, {2});", item_id, 1, Managers.Session.GetSession()));
-        dr.Close();
+        //Debug.Log(String.Format("{0}, {1}", item_id, Managers.Session.GetSession()));
+        Managers.Database.PutSQLiteQuery(String.Format("UPDATE count_of_items SET count=count + {1} WHERE item_id={0} AND session_id = {2}; INSERT INTO count_of_items (item_id, count, session_id) SELECT {0}, {1}, {2} WHERE NOT EXISTS (SELECT 1 FROM count_of_items WHERE item_id={0} AND session_id = {2});"
+          , item_id, 1, Managers.Session.GetSession()));
+        //dr.Close();
     }
 
     public static IEnumerable GetAllItems()
@@ -144,36 +151,40 @@ public class ItemManager : MonoBehaviour, IGameManager {
     {
         int[,] grid = new int[GameGrid.CountInX, GameGrid.CountInZ];
 
-        NpgsqlDataReader dr = Managers.Database.GetQuery(String.Format("SELECT * FROM load_session({0})", Managers.Session.GetSession()));
-        while (dr.Read())
+        using (IDataReader dr = Managers.Database.GetSQLiteQuery(String.Format("SElECT Save.item_id, pos_x AS x, pos_z AS z, rotation AS rot, Save.level, Save.hp FROM Save WHERE session_id = {0};"
+            , Managers.Session.GetSession())))
         {
-            int id = Convert.ToInt32(dr["item_id"]);
-            int posX = Convert.ToInt32(dr["x"]);
-            int posZ = Convert.ToInt32(dr["z"]);
-            int rot = Convert.ToInt32(dr["rot"]);
-            int level = Convert.ToInt32(dr["level"]);
-            double hp = Convert.ToDouble(dr["hp"]);
-
-            Item item = GetItemFromPool(id, new Vector3());
-            item.SetLevel(level);
-            item.SetHP(hp);
-
-            item.transform.position = GameGrid.GetPositionByXZ(posX + (item.SizeX - 1) / 2.0f, posZ + (item.SizeZ - 1) / 2.0f, 0);
-            item.SetPosition(new Vector2(posX, posZ));
-
-            item.transform.rotation = Quaternion.Euler(0, rot, 0) * item.transform.rotation;
-            int new_id = InsertItemToPool(item, rot);
-            item.SetUniqueID(new_id);
-
-            posX--; posZ--;
-            for (int i = posX; i < posX + item.SizeX; ++i)
+            while (dr.Read())
             {
-                for (int j = posZ; j < posZ + item.SizeZ; ++j)
+                int id = Convert.ToInt32(dr["item_id"]);
+                int posX = Convert.ToInt32(dr["x"]);
+                int posZ = Convert.ToInt32(dr["z"]);
+                int rot = Convert.ToInt32(dr["rot"]);
+                int level = Convert.ToInt32(dr["level"]);
+                double hp = Convert.ToDouble(dr["hp"]);
+
+                Item item = GetItemFromPool(id, new Vector3());
+                item.SetLevel(level);
+                item.SetHP(hp);
+
+                item.transform.position = GameGrid.GetPositionByXZ(posX + (item.SizeX - 1) / 2.0f, posZ + (item.SizeZ - 1) / 2.0f, 0);
+                item.SetPosition(new Vector2(posX, posZ));
+
+                item.transform.rotation = Quaternion.Euler(0, rot, 0) * item.transform.rotation;
+                int new_id = InsertItemToPool(item, rot);
+                item.SetUniqueID(new_id);
+
+                posX--; posZ--;
+                for (int i = posX; i < posX + item.SizeX; ++i)
                 {
-                    grid[i, j] = new_id;
+                    for (int j = posZ; j < posZ + item.SizeZ; ++j)
+                    {
+                        grid[i, j] = new_id;
+                    }
                 }
+
             }
-            
+            dr.Close();
         }
 
         GameGrid.SetGrid(grid);
@@ -181,14 +192,12 @@ public class ItemManager : MonoBehaviour, IGameManager {
 
     public void Shutdowm()
     {
-        NpgsqlDataReader dr = Managers.Database.GetQuery(String.Format("SELECT delete_session({0})", Managers.Session.GetSession()));
-        dr.Close();
+        Managers.Database.PutSQLiteQuery(String.Format("DELETE FROM Save WHERE session_id = {0};", Managers.Session.GetSession()));
         foreach (PooledItem item in ItemPool.Values)
         {
             Vector2 pos = item.Item.GetPosition();
-            dr = Managers.Database.GetQuery(String.Format("INSERT INTO Save(item_id, pos_x, pos_z, rotation, level, hp, session_id) VALUES({0}, {1}, {2}, {3}, {4}, {5}, {6})", 
+            Managers.Database.PutSQLiteQuery(String.Format("INSERT INTO Save(item_id, pos_x, pos_z, rotation, level, hp, session_id) VALUES({0}, {1}, {2}, {3}, {4}, {5}, {6})", 
                 item.Item.GetID(), pos.x, pos.y, item.Rotation, item.Item.GetLevel(), item.Item.GetHP(), Managers.Session.GetSession()));
-            dr.Close();
         }
     }
 

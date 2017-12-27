@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using UnityEngine;
 
 public class GameResource
@@ -11,7 +12,7 @@ public class GameResource
     public String Type { get; }
     public Material Image { get; }
 
-    public GameResource(NpgsqlDataReader dr)
+    public GameResource(IDataReader dr)
     {
         ID = Convert.ToInt32(dr["ID"]);
         Name = dr["Name"].ToString();
@@ -34,41 +35,63 @@ public class StorageManager : MonoBehaviour, IGameManager {
     {
         gameResources = new Dictionary<int, GameResource>();
 
-        NpgsqlDataReader dr = Managers.Database.GetQuery("SELECT * FROM resources;");
-
-        while(dr.Read())
+        using (IDataReader dr = Managers.Database.GetSQLiteQuery("SELECT * FROM resources;"))
         {
-            GameResource res = new GameResource(dr);
-            gameResources[res.ID] = res;
+
+            while (dr.Read())
+            {
+                GameResource res = new GameResource(dr);
+                gameResources[res.ID] = res;
+            }
+
+            userResources = new Dictionary<int, int>();
+
+            dr.Close();
+        }
+        using (IDataReader dr = Managers.Database.GetSQLiteQuery(String.Format("SELECT resource_id, count FROM InitialStorage;"
+            , Managers.Session.GetSession())))
+        {
+            while (dr.Read())
+            {
+                userResources[Convert.ToInt32(dr["resource_id"])] = Convert.ToInt32(dr["count"]);
+            }
+
+            dr.Close();
         }
 
-        dr = Managers.Database.GetQuery(String.Format("SELECT * FROM get_user_resources({0});", Managers.Session.GetSession()));
-
-        userResources = new Dictionary<int, int>();
-
-        while (dr.Read())
+        using (IDataReader dr = Managers.Database.GetSQLiteQuery(String.Format("SELECT resource_id, count FROM Storage WHERE session_id = {0};"
+            , Managers.Session.GetSession())))
         {
-            userResources[Convert.ToInt32(dr["resource_id"])] = Convert.ToInt32(dr["count"]);
+            while (dr.Read())
+            {
+                userResources[Convert.ToInt32(dr["resource_id"])] = Convert.ToInt32(dr["count"]);
+            }
+
+            dr.Close();
         }
 
-        dr = Managers.Database.GetQuery("SELECT * FROM MaxStorage;");
-
-        resourceLimits = new Dictionary<int, int>();
-
-        while (dr.Read())
+        using (IDataReader dr = Managers.Database.GetSQLiteQuery("SELECT * FROM MaxStorage;"))
         {
-            resourceLimits[Convert.ToInt32(dr["resource_id"])] = Convert.ToInt32(dr["count"]);
+
+            resourceLimits = new Dictionary<int, int>();
+
+            while (dr.Read())
+            {
+                resourceLimits[Convert.ToInt32(dr["resource_id"])] = Convert.ToInt32(dr["count"]);
+            }
+            dr.Close();
         }
+
 
         stat_panel = panel;
         stat_panel.SetPanel();
-        SetStartTotalResCount();
+        //SetStartTotalResCount();
         status = ManagerStatus.Started;
     }
 
     public void SetStartTotalResCount()
     {
-        NpgsqlDataReader dr = Managers.Database.GetQuery(String.Format("SELECT * FROM get_total_res_count({0})", Managers.Session.GetSession()));
+        IDataReader dr = Managers.Database.GetQuery(String.Format("SELECT * FROM get_total_res_count({0})", Managers.Session.GetSession()));
         Dictionary<int, double> total_res = new Dictionary<int, double>();
         while (dr.Read())
         {
@@ -104,8 +127,8 @@ public class StorageManager : MonoBehaviour, IGameManager {
     {
         foreach (var key in gameResources.Keys)
         {
-            NpgsqlDataReader dr = Managers.Database.GetQuery(String.Format("SELECT set_storage({0}, {1}, {2})", key, userResources[key], Managers.Session.GetSession()));
-            dr.Close();
+            Managers.Database.PutSQLiteQuery(String.Format("UPDATE storage SET count={1} WHERE resource_id = {0} AND session_id = {2}; INSERT INTO storage (resource_id, count, session_id) SELECT {0}, {1}, {2} WHERE NOT EXISTS (SELECT 1 FROM storage WHERE resource_id = {0} AND session_id = {2});"
+                , key, userResources[key], Managers.Session.GetSession()));
         }
     }
 
@@ -116,8 +139,8 @@ public class StorageManager : MonoBehaviour, IGameManager {
             foreach (var key in res.Keys)
             {
                 userResources[key] -= res[key];
-                NpgsqlDataReader dr = Managers.Database.GetQuery(String.Format("SELECT set_storage({0}, {1}, {2})", key, userResources[key], Managers.Session.GetSession()));
-                dr.Close();
+                Managers.Database.PutSQLiteQuery(String.Format("UPDATE storage SET count={1} WHERE resource_id = {0} AND session_id = {2}; INSERT INTO storage (resource_id, count, session_id) SELECT {0}, {1}, {2} WHERE NOT EXISTS (SELECT 1 FROM storage WHERE resource_id = {0} AND session_id = {2});"
+                    , key, userResources[key], Managers.Session.GetSession()));
             }
         }
         stat_panel.UpdatePanel();

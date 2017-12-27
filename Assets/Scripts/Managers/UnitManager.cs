@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using UnityEngine;
 
 public class UnitManager : MonoBehaviour, IGameManager {
@@ -82,38 +83,40 @@ public class UnitManager : MonoBehaviour, IGameManager {
 
     void LoadSession()
     {
-        NpgsqlDataReader dr = Managers.Database.GetQuery(String.Format("SELECT * FROM load_unit_session({0})", Managers.Session.GetSession()));
-        while (dr.Read())
+        using (IDataReader dr = Managers.Database.GetSQLiteQuery(String.Format("SElECT SavedUnits.unit_id AS item_id, pos_x AS x, pos_z AS z, rotation AS rot, SavedUnits.level, SavedUnits.hp FROM SavedUnits WHERE session_id = {0};"
+            , Managers.Session.GetSession())))
         {
-            int id = Convert.ToInt32(dr["item_id"]);
-            float posX = (float)Convert.ToDouble(dr["x"]);
-            float posZ = (float)Convert.ToDouble(dr["z"]);
-            float rot = (float)Convert.ToDouble(dr["rot"]);
-            int level = Convert.ToInt32(dr["level"]);
-            double hp = Convert.ToDouble(dr["hp"]);
+            while (dr.Read())
+            {
+                int id = Convert.ToInt32(dr["item_id"]);
+                float posX = (float)Convert.ToDouble(dr["x"]);
+                float posZ = (float)Convert.ToDouble(dr["z"]);
+                float rot = (float)Convert.ToDouble(dr["rot"]);
+                int level = Convert.ToInt32(dr["level"]);
+                double hp = Convert.ToDouble(dr["hp"]);
 
-            Unit item = GetNewUnit(id);
-            item.SetLevel(level);
-            item.SetHP(hp);
+                Unit item = GetNewUnit(id);
+                item.SetLevel(level);
+                item.SetHP(hp);
 
-            item.transform.position = new Vector3(posX, 0, posZ);
+                item.transform.position = new Vector3(posX, 0, posZ);
 
-            item.transform.rotation = Quaternion.Euler(0, rot, 0);
+                item.transform.rotation = Quaternion.Euler(0, rot, 0);
 
-            item.InitUnit();
+                item.InitUnit();
+            }
+            dr.Close();
         }
     }
 
     public void Shutdowm()
     {
-        NpgsqlDataReader dr = Managers.Database.GetQuery(String.Format("SELECT delete_unit_session({0})", Managers.Session.GetSession()));
-        dr.Close();
+        Managers.Database.PutSQLiteQuery(String.Format("DELETE FROM SavedUnits WHERE session_id = {0};", Managers.Session.GetSession()));
         foreach (Unit item in units.Values)
         {
             Vector2 pos = new Vector2(item.transform.position.x, item.transform.position.z);
-            dr = Managers.Database.GetQuery(String.Format("INSERT INTO SavedUnits(unit_id, pos_x, pos_z, rotation, level, hp, session_id) VALUES({0}, {1}, {2}, {3}, {4}, {5}, {6})",
+            Managers.Database.PutSQLiteQuery(String.Format("INSERT INTO SavedUnits(unit_id, pos_x, pos_z, rotation, level, hp, session_id) VALUES({0}, {1}, {2}, {3}, {4}, {5}, {6})",
                 item.GetID(), pos.x, pos.y, item.transform.rotation.eulerAngles.y, item.GetLevel(), item.GetHP(), Managers.Session.GetSession()));
-            dr.Close();
         }
     }
 
@@ -123,36 +126,43 @@ public class UnitManager : MonoBehaviour, IGameManager {
 
         unitChars = new Dictionary<int, TowerChar>();
 
-        NpgsqlDataReader dr = Managers.Database.GetQuery("SELECT * FROM TowerChars");
-
-        while (dr.Read())
+        using (IDataReader dr = Managers.Database.GetSQLiteQuery("SELECT * FROM TowerChars"))
         {
-            int char_id = Convert.ToInt32(dr["ID"]);
 
-            unitChars[char_id] = new TowerChar(dr["name"].ToString(), dr["image"].ToString());
+            while (dr.Read())
+            {
+                int char_id = Convert.ToInt32(dr["ID"]);
+
+                unitChars[char_id] = new TowerChar(dr["name"].ToString(), dr["image"].ToString());
+            }
+
+            UnitLevels = new Dictionary<int, Dictionary<int, Dictionary<int, double>>>();
+
+            dr.Close();
         }
 
-        UnitLevels = new Dictionary<int, Dictionary<int, Dictionary<int, double>>>();
-
-        dr = Managers.Database.GetQuery("SELECT * FROM get_unit_levels();");
-
-        while (dr.Read())
+        using (IDataReader dr = Managers.Database.GetSQLiteQuery("SELECT u.item_id, ul.level,  ulc.unitcharid AS char_id, ulc.value FROM Units AS u	JOIN UnitLevels AS ul ON ul.unit_id = u.ID JOIN UnitLevelChars AS ulc ON ulc.unitlevelid = ul.ID;"))
         {
-            int item_id = Convert.ToInt32(dr["item_id"]);
-            int level = Convert.ToInt32(dr["level"]);
-            int char_id = Convert.ToInt32(dr["char_id"]);
-            double value = Convert.ToDouble(dr["value"]);
 
-            if (!UnitLevels.ContainsKey(item_id))
-                UnitLevels[item_id] = new Dictionary<int, Dictionary<int, double>>();
+            while (dr.Read())
+            {
+                int item_id = Convert.ToInt32(dr["item_id"]);
+                int level = Convert.ToInt32(dr["level"]);
+                int char_id = Convert.ToInt32(dr["char_id"]);
+                double value = Convert.ToDouble(dr["value"]);
 
-            if (!UnitLevels[item_id].ContainsKey(level))
-                UnitLevels[item_id][level] = new Dictionary<int, double>();
+                if (!UnitLevels.ContainsKey(item_id))
+                    UnitLevels[item_id] = new Dictionary<int, Dictionary<int, double>>();
 
-            UnitLevels[item_id][level][char_id] = value;
+                if (!UnitLevels[item_id].ContainsKey(level))
+                    UnitLevels[item_id][level] = new Dictionary<int, double>();
+
+                UnitLevels[item_id][level][char_id] = value;
+            }
+            dr.Close();
         }
+
         LoadSession();
-
         status = ManagerStatus.Started;
     }
 

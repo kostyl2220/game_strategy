@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using UnityEngine;
 
 public class TowerChar
@@ -48,58 +49,66 @@ public class TowerManager : MonoBehaviour, IGameManager {
     {
         towerLevels = new Dictionary<int, Dictionary<int, Dictionary<int, double>>>();
 
-        NpgsqlDataReader dr = Managers.Database.GetQuery("SELECT * FROM get_tower_levels();");
-
-        while (dr.Read())
+        using (IDataReader dr = Managers.Database.GetSQLiteQuery("SELECT t.item_id, tl.level, tlc.towercharid AS char_id, tlc.value FROM Towers AS t JOIN TowerLevels AS tl ON tl.tower_id = t.ID JOIN TowerLevelChars AS tlc ON tlc.towerlevelid = tl.ID;"))
         {
-            int item_id = Convert.ToInt32(dr["item_id"]);
-            int level = Convert.ToInt32(dr["level"]);
-            int char_id = Convert.ToInt32(dr["char_id"]);
-            double value = Convert.ToDouble(dr["value"]);
 
-            if (!towerLevels.ContainsKey(item_id))
-                towerLevels[item_id] = new Dictionary<int, Dictionary<int, double>>();
+            while (dr.Read())
+            {
+                int item_id = Convert.ToInt32(dr["item_id"]);
+                int level = Convert.ToInt32(dr["level"]);
+                int char_id = Convert.ToInt32(dr["char_id"]);
+                double value = Convert.ToDouble(dr["value"]);
 
-            if (!towerLevels[item_id].ContainsKey(level))
-                towerLevels[item_id][level] = new Dictionary<int, double>();
+                if (!towerLevels.ContainsKey(item_id))
+                    towerLevels[item_id] = new Dictionary<int, Dictionary<int, double>>();
 
-            towerLevels[item_id][level][char_id] = value;
+                if (!towerLevels[item_id].ContainsKey(level))
+                    towerLevels[item_id][level] = new Dictionary<int, double>();
+
+                towerLevels[item_id][level][char_id] = value;
+            }
+
+            towerLevelBullets = new Dictionary<int, Dictionary<int, List<int>>>();
+
+            dr.Close();
         }
 
-        towerLevelBullets = new Dictionary<int, Dictionary<int, List<int>>>();
-
-        dr = Managers.Database.GetQuery("SELECT * FROM get_tower_bullets();");
-
-        while (dr.Read())
+        using (IDataReader dr = Managers.Database.GetSQLiteQuery("SELECT t.item_id, tl.level,   tb.bullet_id FROM Towers AS t JOIN TowerLevels AS tl ON tl.tower_id = t.ID JOIN TowerBullets AS tb ON tb.tower_id = tl.ID;"))
         {
-            int item_id = Convert.ToInt32(dr["item_id"]);
-            int level = Convert.ToInt32(dr["level"]);
-            int bullet_id = Convert.ToInt32(dr["bullet_id"]);
-         
-            if (!towerLevelBullets.ContainsKey(item_id))
-                towerLevelBullets[item_id] = new Dictionary<int, List<int>>();
+            while (dr.Read())
+            {
+                int item_id = Convert.ToInt32(dr["item_id"]);
+                int level = Convert.ToInt32(dr["level"]);
+                int bullet_id = Convert.ToInt32(dr["bullet_id"]);
 
-            if (!towerLevelBullets[item_id].ContainsKey(level))
-                towerLevelBullets[item_id][level] = new List<int>();
+                if (!towerLevelBullets.ContainsKey(item_id))
+                    towerLevelBullets[item_id] = new Dictionary<int, List<int>>();
 
-            towerLevelBullets[item_id][level].Add(bullet_id);
+                if (!towerLevelBullets[item_id].ContainsKey(level))
+                    towerLevelBullets[item_id][level] = new List<int>();
+
+                towerLevelBullets[item_id][level].Add(bullet_id);
+            }
+
+            towerBullets = new Dictionary<int, TowerBullet>();
+            dr.Close();
         }
 
-        towerBullets = new Dictionary<int, TowerBullet>();
-        dr = Managers.Database.GetQuery("SELECT * FROM bullets;");
-
-        while(dr.Read())
+        using (IDataReader dr = Managers.Database.GetSQLiteQuery("SELECT * FROM bullets;"))
         {
-            int id = Convert.ToInt32(dr["id"]);
-            String name = dr["name"].ToString();
-            String prefab_path = dr["prefab"].ToString();
-            double damage = Convert.ToDouble(dr["damage"]);
-            double radius = Convert.ToDouble(dr["radius"]);
-            towerBullets[id] = new TowerBullet(name, prefab_path, damage, radius);
+            while (dr.Read())
+            {
+                int id = Convert.ToInt32(dr["id"]);
+                String name = dr["name"].ToString();
+                String prefab_path = dr["prefab"].ToString();
+                double damage = Convert.ToDouble(dr["damage"]);
+                double radius = Convert.ToDouble(dr["radius"]);
+                towerBullets[id] = new TowerBullet(name, prefab_path, damage, radius);
+            }
+            dr.Close();
         }
 
         InitTowers();
-
         status = ManagerStatus.Started;
     }
 
