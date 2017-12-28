@@ -85,21 +85,7 @@ public class StorageManager : MonoBehaviour, IGameManager {
 
         stat_panel = panel;
         stat_panel.SetPanel();
-        //SetStartTotalResCount();
         status = ManagerStatus.Started;
-    }
-
-    public void SetStartTotalResCount()
-    {
-        IDataReader dr = Managers.Database.GetQuery(String.Format("SELECT * FROM get_total_res_count({0})", Managers.Session.GetSession()));
-        Dictionary<int, double> total_res = new Dictionary<int, double>();
-        while (dr.Read())
-        {
-            int resource = Convert.ToInt32(dr["name"]);
-            double count = Convert.ToDouble(dr["count"]);
-            total_res[resource] = count;
-        }
-        stat_panel.SetTotalIncome(total_res);
     }
 
     public static void AddResource(int resource_id, int count)
@@ -139,8 +125,6 @@ public class StorageManager : MonoBehaviour, IGameManager {
             foreach (var key in res.Keys)
             {
                 userResources[key] -= res[key];
-                Managers.Database.PutSQLiteQuery(String.Format("UPDATE storage SET count={1} WHERE resource_id = {0} AND session_id = {2}; INSERT INTO storage (resource_id, count, session_id) SELECT {0}, {1}, {2} WHERE NOT EXISTS (SELECT 1 FROM storage WHERE resource_id = {0} AND session_id = {2});"
-                    , key, userResources[key], Managers.Session.GetSession()));
             }
         }
         stat_panel.UpdatePanel();

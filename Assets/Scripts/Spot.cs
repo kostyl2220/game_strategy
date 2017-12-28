@@ -106,10 +106,8 @@ public class Spot {
 
             if (CoveredPoints.Count < unitCount)
             {
-                Debug.Log("Not covered");
                 if (!TryReverse)
                 {
-                    Debug.Log("Try reverse");
                     List<Vector3> ReversedCells = GetReversedMoveCells(direction, Center, unitCount);
                     foreach (var cell in ReversedCells)
                         AddToCover(new UnitPoint(grid, cell));
@@ -120,7 +118,6 @@ public class Spot {
                 else
                 {
                     RectSize += 1;
-                    Debug.Log(String.Format("Size of rect {0}", RectSize));
                     ExpandPoints(direction, Center, grid);
                     CheckNewPointsToCover(unitCount);
                 }

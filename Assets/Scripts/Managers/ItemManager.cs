@@ -41,6 +41,10 @@ public class ItemManager : MonoBehaviour, IGameManager {
 
     private static Dictionary<int, Item> ObjectPool; //returned unused items
 
+    private static Dictionary<int, int> CountOfItems;
+
+    private static Dictionary<int, Dictionary<int, int>> ItemRequirements;
+
     private static int LastItemId = 1;
     private static GameObject staticItemPool;
 
@@ -49,6 +53,8 @@ public class ItemManager : MonoBehaviour, IGameManager {
         itemStorage = new Dictionary<int, StoredItem>();
         ItemPool = new Dictionary<int, PooledItem>();
         ObjectPool = new Dictionary<int, Item>();
+        CountOfItems = new Dictionary<int, int>();
+        ItemRequirements = new Dictionary<int, Dictionary<int, int>>();
         using (IDataReader dr = Managers.Database.GetSQLiteQuery("SELECT * FROM Items ORDER BY Name;"))
         {
             while (dr.Read())
@@ -69,12 +75,48 @@ public class ItemManager : MonoBehaviour, IGameManager {
             dr.Close();
         }
 
+        using(IDataReader dr = Managers.Database.GetSQLiteQuery("WITH RECURSIVE Rec (root, child, count) AS (SELECT owner_id, req_id, count FROM requirements UNION ALL SELECT Rec.root, r.req_id, r.count FROM Rec INNER JOIN requirements AS r ON r.owner_id = Rec.child )SELECT root, child, NeedTo FROM (SELECT distinct root, child, max(Rec.count) AS NeedTo FROM Rec GROUP BY root, child) AS query;"))
+        {
+            while (dr.Read())
+            {
+                int root_id = Convert.ToInt32(dr["root"]);
+                int child_id = Convert.ToInt32(dr["child"]);
+                int needTo = Convert.ToInt32(dr["NeedTo"]);
+
+                if (!ItemRequirements.ContainsKey(root_id))
+                    ItemRequirements[root_id] = new Dictionary<int, int>();
+
+                ItemRequirements[root_id][child_id] = needTo;
+            }
+        }
+
         staticItemPool = ItemObjectPool;
         status = ManagerStatus.Started;
 
         LoadSession();
     }
     
+    public Dictionary<int, int> GetRequirements(int item_id)
+    {
+        Dictionary<int, int> dictOfReq = new Dictionary<int, int>();
+        if (!ItemRequirements.ContainsKey(item_id))
+            return dictOfReq;
+
+        foreach (var pair in ItemRequirements[item_id])
+        {
+            if (!CountOfItems.ContainsKey(pair.Key))
+            {
+                dictOfReq[pair.Key] = pair.Value;
+                continue;
+            }
+
+            if (CountOfItems[pair.Key] < pair.Value)
+                dictOfReq[pair.Key] = pair.Value - CountOfItems[pair.Key];
+        }
+
+        return dictOfReq;
+    }
+
     int InsertItemToPool(Item item, int rotation)
     {
         ItemPool[LastItemId] = new PooledItem(item, rotation);
@@ -115,10 +157,7 @@ public class ItemManager : MonoBehaviour, IGameManager {
 
     static void SaveItemToDatabase(int item_id)
     {
-        //Debug.Log(String.Format("{0}, {1}", item_id, Managers.Session.GetSession()));
-        Managers.Database.PutSQLiteQuery(String.Format("UPDATE count_of_items SET count=count + {1} WHERE item_id={0} AND session_id = {2}; INSERT INTO count_of_items (item_id, count, session_id) SELECT {0}, {1}, {2} WHERE NOT EXISTS (SELECT 1 FROM count_of_items WHERE item_id={0} AND session_id = {2});"
-          , item_id, 1, Managers.Session.GetSession()));
-        //dr.Close();
+        AddItemCount(item_id, 1);
     }
 
     public static IEnumerable GetAllItems()
@@ -183,6 +222,7 @@ public class ItemManager : MonoBehaviour, IGameManager {
                     }
                 }
 
+                AddItemCount(id, 1);
             }
             dr.Close();
         }
@@ -232,5 +272,12 @@ public class ItemManager : MonoBehaviour, IGameManager {
     {
         item.gameObject.SetActive(false);
         ObjectPool[item.GetID()] = item;
+    }
+
+    public static void AddItemCount(int id, int count)
+    {
+        if (!CountOfItems.ContainsKey(id))
+            CountOfItems[id] = 0;
+        CountOfItems[id] += count;
     }
 }

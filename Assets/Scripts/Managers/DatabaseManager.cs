@@ -32,17 +32,7 @@ public class DatabaseManager : MonoBehaviour, IGameManager
             //string connstring = System.IO.File.ReadAllText("dbConfig.txt");
             //conn = new NpgsqlConnection(connstring);
             //conn.Open();
-
-            using (sqliteconn = new SqliteConnection(sqConnectionString)) { 
-                sqliteconn.Open();
-
-
-                com = new SqliteCommand(sqliteconn);
-                com.CommandText = "INSERT INTO Sessions(Name, user_id) VALUES(\"session2\", 1);";
-                com.ExecuteNonQuery();
-                com.Dispose();
-            }
-
+       
             sqliteconn = new SqliteConnection(sqConnectionString);
             sqliteconn.Open();
 
