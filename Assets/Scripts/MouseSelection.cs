@@ -1,4 +1,5 @@
 ﻿using Assets.Scripts;
+using Assets.Scripts.MoveStrategies;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -66,7 +67,12 @@ public class MouseSelection : MonoBehaviour {
             else if (Input.GetMouseButtonUp(1))
             {
                 if (OldMousePosition1 == Input.mousePosition && selected_units.Count != 0)
-                    PointToPosition(Input.mousePosition);
+                {
+                    if (!PointToItem(Input.mousePosition))
+                    {
+                        PointToPosition(Input.mousePosition);
+                    }
+                }
             }
         }
     }
@@ -116,15 +122,37 @@ public class MouseSelection : MonoBehaviour {
         }
     }
 
-    void PointToPosition(Vector2 TouchPosition)
+    bool PointToPosition(Vector2 TouchPosition)
     {
-        int layer_mask = LayerMask.GetMask("Grid");
+        int layer_mask = LayerMask.GetMask("Grid", "Item");
         RaycastHit hit;
         Ray ray = Camera.main.ScreenPointToRay(TouchPosition);
         if (Physics.Raycast(ray, out hit, 20f, layer_mask))
         {
-            FindPath(hit.point);
+            spotAlgorithm.SetStrategy(new MoveRectDirFrontStrategy());
+            FindPath(hit.point, false, 1, 1);
+            return true;
         }
+        return false;
+    }
+
+    bool PointToItem(Vector2 TouchPosition)
+    {
+        int layer_mask = LayerMask.GetMask("Item");
+        RaycastHit hit;
+        Ray ray = Camera.main.ScreenPointToRay(TouchPosition);
+        if (Physics.Raycast(ray, out hit, 20f, layer_mask))
+        {
+            Item it = hit.collider.GetComponent<Item>();
+            if (it)
+            {
+                spotAlgorithm.SetStrategy(new AttackCircleStratery());
+                Vector3 unitPos = grid.GetPositionByXZ(it.GetPosition().x, it.GetPosition().y, 0);            
+                FindPath(unitPos, true, it.SizeX, it.SizeZ);
+                return true;
+            }
+        }
+        return false;
     }
 
     public Vector3 GetUnitCenter()
@@ -141,18 +169,24 @@ public class MouseSelection : MonoBehaviour {
         return center;
     }
 
-    public void FindPath(Vector3 EndPos)
+    public void FindPath(Vector3 EndPos, bool AttackOnEnd, int SizeX, int SizeZ)
     {
         Vector2 center_end_pos = grid.GetPointByPosition(EndPos);
+
+        if (!AttackOnEnd && !grid.IsWalkablePoint(center_end_pos))
+            return;
+
         if (grid.InRangePoint(center_end_pos.x + 1, center_end_pos.y + 1))
         {
             Vector3 moveDirection = (EndPos - selected_units[0].transform.position).normalized;
-            List<Spot.UnitPoint> Spot = spotAlgorithm.MakeSpot(moveDirection, EndPos, grid, selected_units.Count);
+            List<Spot.UnitPoint> Spot = spotAlgorithm.MakeSpot(moveDirection, EndPos, grid, selected_units.Count, SizeX, SizeZ);
+
             if (Spot.Count == 0)
             {
                 Debug.Log("Can't move");
                 return;
             }
+
             pathfinding.SetGrid(grid.GetGrid());
 
             for (int i = 0; i < selected_units.Count; ++i)

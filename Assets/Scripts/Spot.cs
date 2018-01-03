@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Assets.Scripts.MoveStrategies;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,11 +11,8 @@ public class Spot {
     private List<UnitPoint> pointsToCover;
     private List<UnitPoint> CoveredPoints;
 
-    private int RectSize;
-    private int StartRectSize;
     private Grid grid;
-
-    private bool TryReverse;
+    private IWalkStrategy Strategy; 
 
     public class UnitPoint
     {
@@ -56,6 +54,12 @@ public class Spot {
         spotsArray = new Dictionary<int, Dictionary<int, SpotPoint>>();
         pointsToCover = new List<UnitPoint>();
         CoveredPoints = new List<UnitPoint>();
+        Strategy = new AttackCircleStratery();
+    }
+
+    public void SetStrategy(IWalkStrategy strategy)
+    {
+        Strategy = strategy;
     }
 
     public List<SpotPoint> GetNeighbours(SpotPoint point, Grid grid)
@@ -77,11 +81,11 @@ public class Spot {
         return Neighbours;   
     }
 
-    public List<UnitPoint> MakeSpot(Vector3 direction, Vector3 Center, Grid grid, int unitCount)
+    public List<UnitPoint> MakeSpot(Vector3 direction, Vector3 Center, Grid grid, int unitCount, int SizeX = 1, int SizeZ = 1)
     {
         this.grid = grid;
-        TryReverse = false;
-        List<Vector3> EndCells = GetMoveCells(direction, Center, unitCount);
+        Strategy.InitStrategy();
+        List<Vector3> EndCells = Strategy.GetMoveCells(direction, Center, unitCount, grid, SizeX, SizeZ);
         spotsArray.Clear();
         activeSpots.Clear();
 
@@ -92,8 +96,9 @@ public class Spot {
             AddToCover(new UnitPoint(grid, Cell));
         }
 
-        Vector2 startPos = grid.GetPointByPosition(Center);
-        AddToSpot(new SpotPoint(startPos, grid.GetGrid()[(int)startPos.x, (int)startPos.y] == 0));
+        Vector2 centerPos = grid.GetPointByPosition(Center);
+        foreach (var startPos in Strategy.GetStartPoints(centerPos, pointsToCover))
+            AddToSpot(new SpotPoint(startPos, grid.GetGrid()[(int)startPos.x, (int)startPos.y] == 0));
 
         while (CoveredPoints.Count < unitCount)
         {
@@ -106,21 +111,11 @@ public class Spot {
 
             if (CoveredPoints.Count < unitCount)
             {
-                if (!TryReverse)
-                {
-                    List<Vector3> ReversedCells = GetReversedMoveCells(direction, Center, unitCount);
-                    foreach (var cell in ReversedCells)
-                        AddToCover(new UnitPoint(grid, cell));
+                List<Vector3> NewCells = Strategy.ExpandPoints(direction, Center, unitCount, grid, SizeX, SizeZ);
+                foreach (var cell in NewCells)
+                    AddToCover(new UnitPoint(grid, cell));
 
-                    CheckNewPointsToCover(unitCount);
-                    TryReverse = true;
-                }
-                else
-                {
-                    RectSize += 1;
-                    ExpandPoints(direction, Center, grid);
-                    CheckNewPointsToCover(unitCount);
-                }
+                CheckNewPointsToCover(unitCount);
             }
 
             if (!HasActiveSpot())
@@ -177,99 +172,6 @@ public class Spot {
             else
                 pointsToCover.RemoveAt(index);
         }
-    }
-
-    void ExpandPoints(Vector3 direction, Vector3 end_pos, Grid grid)
-    {
-        Vector3 right = Quaternion.Euler(0, 90f, 0) * direction;
-
-        /*for (int i = 0; i < RectSize; ++i)
-        {
-            float MoveZ = i - (RectSize - 1) / 2.0f;
-
-            for (int j = 0; j < RectSize; ++j)
-            {
-                if (i > 0 && i < RectSize - 1 &&
-                    j > 0 && j < RectSize - 1)
-                    continue;
-
-                float MoveX = j - (RectSize - 1) / 2f;
-
-                Vector3 pos = end_pos - direction * MoveZ - right * MoveX;
-                AddToCover(new UnitPoint(grid, pos));
-            }
-        }*/
-
-        //left and right points
-         float MoveX = (2 * RectSize - 1 - StartRectSize) / 2f;
-         for (int i = 0; i < RectSize; ++i)
-         {
-             float MoveZ = i - (StartRectSize - 1) / 2f;
-
-             Vector3 pos = end_pos - direction * MoveZ + right * MoveX;
-             AddToCover(new UnitPoint(grid, pos));
-             Vector3 pos2 = end_pos - direction * MoveZ + right * MoveX;
-             AddToCover(new UnitPoint(grid, pos2));
-         }
-
-         //back positions
-         float MoveZ2 = RectSize / 2f;
-         int count_of_ells = (RectSize - 1) * 2 - StartRectSize;
-         for (int i = 0; i < count_of_ells; ++i)
-         {
-             float MoveX2 = i - (count_of_ells - 1) / 2f;
-             Vector3 pos = end_pos - direction * MoveZ2 - right * MoveX2;
-             AddToCover(new UnitPoint(grid, pos));
-         }
-    }
-
-    public List<Vector3> GetMoveCells(Vector3 direction, Vector3 end_pos, int unitCount)
-    {
-        List<Vector3> PosList = new List<Vector3>();
-        Vector3 right = Quaternion.Euler(0, 90f, 0) * direction;
-        StartRectSize = (int)Mathf.Ceil(Mathf.Sqrt(unitCount));
-        RectSize = StartRectSize;
-        for (int i = 0; i < RectSize; ++i)
-        {
-            float MoveZ = i - (RectSize - 1) / 2.0f;
-
-            for (int j = 0; j < RectSize; ++j)
-            {
-                if (unitCount == 0)
-                    return PosList;
-
-                float MoveX = j - (RectSize - 1) / 2f;
-
-                Vector3 pos = end_pos - direction * MoveZ - right * MoveX;
-                PosList.Add(pos);
-                unitCount--;
-            }
-        }
-        return PosList;
-    }
-
-    public List<Vector3> GetReversedMoveCells(Vector3 direction, Vector3 end_pos, int unitCount)
-    {
-        unitCount = StartRectSize * StartRectSize - unitCount;
-        List<Vector3> PosList = new List<Vector3>();
-        Vector3 right = Quaternion.Euler(0, 90f, 0) * direction;
-        for (int i = 0; i < StartRectSize; ++i)
-        {
-            float MoveZ = i - (StartRectSize - 1) / 2.0f;
-
-            for (int j = 0; j < StartRectSize; ++j)
-            {
-                if (unitCount == 0)
-                    return PosList;
-
-                float MoveX = j - (StartRectSize - 1) / 2f;
-
-                Vector3 pos = end_pos + direction * MoveZ + right * MoveX;
-                PosList.Add(pos);
-                unitCount--;
-            }
-        }
-        return PosList;
     }
 
     bool HasActiveSpot()

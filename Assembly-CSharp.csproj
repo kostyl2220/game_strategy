@@ -76,6 +76,10 @@
      <Compile Include="Assets\Scripts\Managers\TowerManager.cs" />
      <Compile Include="Assets\Scripts\Managers\UnitManager.cs" />
      <Compile Include="Assets\Scripts\MouseSelection.cs" />
+     <Compile Include="Assets\Scripts\MoveStrategies\AttackCircleStratery.cs" />
+     <Compile Include="Assets\Scripts\MoveStrategies\IWalkStrategy.cs" />
+     <Compile Include="Assets\Scripts\MoveStrategies\MoveRectDirFrontStrategy.cs" />
+     <Compile Include="Assets\Scripts\MoveStrategies\MoveRectStrategy.cs" />
      <Compile Include="Assets\Scripts\PathfindingA.cs" />
      <Compile Include="Assets\Scripts\ProtectionBuilding.cs" />
      <Compile Include="Assets\Scripts\ProtectionChar.cs" />

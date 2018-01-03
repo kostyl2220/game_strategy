@@ -44,20 +44,6 @@ public class Factory : Item {
         drops.Clear();
     }
 
-    IEnumerator DropText(FactoryDrop text, Vector3 endPos)
-    {
-        //TODO Make queue
-        drops.Add(text);
-        Vector3 direction = Vector3.Normalize(endPos - text.transform.position);
-        while (text.transform.position.y < endPos.y)
-        {
-            text.transform.position += direction * Time.deltaTime;
-            yield return null;
-        }
-        RemoveDrop(text);
-        drops.Remove(text);
-    }
-
     IEnumerator AddResource(int resource_id)
     {
         int[] resource_count = resources[resource_id];
@@ -67,7 +53,7 @@ public class Factory : Item {
             StorageManager.AddResource(resource_id, resource_count[0]);
 
             FactoryDrop drop = GetDrop();
-            drop.SetData(resource_id, resource_count[0]);
+            drop.SetData(resource_id, resource_count[0], this);
             queue.Enqueue(drop);
         }
     }
@@ -89,8 +75,9 @@ public class Factory : Item {
         return dr;
     }
 
-    void RemoveDrop(FactoryDrop drop)
+    public void RemoveDrop(FactoryDrop drop)
     {
+        drops.Remove(drop);
         drop.gameObject.SetActive(false);
         used.Add(drop);
     }
@@ -102,7 +89,8 @@ public class Factory : Item {
         {
             FactoryDrop dr = queue.Dequeue();
             dr.gameObject.SetActive(true);
-            StartCoroutine(DropText(dr, transform.position + new Vector3(0, 2f, 0)));
+            drops.Add(dr);
+            dr.Start(transform.position + new Vector3(0, 2f, 0));
             lastReload = Time.time;
         }
         

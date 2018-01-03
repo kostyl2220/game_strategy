@@ -261,10 +261,21 @@ public class Grid : MonoBehaviour {
             && tempGrid.Z >= 1 && tempGrid.Z + tempGrid.SizeZ - 1<= CountInZ;
     }
 
+    public bool IsWalkablePoint(Vector2 point)
+    {
+        return GridItems[(int)point.x, (int)point.y] == 0;
+    }
+
     public bool InRangePoint(float X, float Z)
     {
         return X >= 1 && X <= CountInX
             && Z >= 1 && Z <= CountInZ;
+    }
+
+    public bool InRangePoint0(float X, float Z)
+    {
+        return X >= 0 && X < CountInX
+            && Z >= 0 && Z < CountInZ;
     }
 
     void CheckCollideGrids()
