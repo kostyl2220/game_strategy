@@ -195,6 +195,7 @@ public class UnitManager : MonoBehaviour, IGameManager {
         newUnit.gameObject.SetActive(true);
         newUnit.SetData(unit);
         newUnit.SetUniqueID(unic_unit_id);
+        newUnit.transform.localScale = new Vector3(1, 1, 1);
         units[unic_unit_id] = newUnit;
 
         newUnit.SetLevel(1);

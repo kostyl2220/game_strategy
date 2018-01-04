@@ -7,6 +7,7 @@ public class Factory : Item {
     private static float WaitTime = 0.5f;
 
     public FactoryDrop drop;
+    public FactoryResource factoryRes;
 
     private FactoryInfo factory_info;
     private Dictionary<int, int[]> resources;
@@ -17,31 +18,52 @@ public class Factory : Item {
 
     private List<FactoryDrop> used;
     private float lastReload = -WaitTime;
+
+    private List<FactoryResource> resource_list;
+
 	// Use this for initialization
 	void Awake () {
         drops = new List<FactoryDrop>();
         queue = new Queue<FactoryDrop>();
         used = new List<FactoryDrop>();
+        resource_list = new List<FactoryResource>();
     }
 
     void RunFactory()
     {
         StopAllDrops();
-        foreach (var res in resources.Keys)
+        StopResources();
+        foreach (var res in resources)
         {
-            StartCoroutine(AddResource(res));
+            FactoryResource fac_res = Instantiate(factoryRes, transform);
+            fac_res.SetData(res.Key, res.Value[1] / 1000f, res.Value[0], this);
+            resource_list.Add(fac_res);
         }
     }
 
+
+
     void StopAllDrops()
-    {
-        StopAllCoroutines();
-        foreach(var dr in drops)
+    {   
+        foreach(var drop in drops)
         {
-            Destroy(dr.gameObject);
+            drop.gameObject.SetActive(false);
+            used.Add(drop);
         }
         queue.Clear();
         drops.Clear();
+    }
+
+    public void StopResources()
+    {
+        foreach (var res in resource_list)
+            Destroy(res.gameObject);
+        resource_list.Clear();
+    }
+
+    public void AddToQueue(FactoryDrop drop)
+    {
+        queue.Enqueue(drop);
     }
 
     IEnumerator AddResource(int resource_id)
@@ -64,7 +86,7 @@ public class Factory : Item {
         RunFactory();
     }
 
-    FactoryDrop GetDrop()
+    public FactoryDrop GetDrop()
     {
         if (used.Count == 0)
             return Instantiate(this.drop, transform.position, this.drop.transform.rotation, transform);

@@ -58,6 +58,7 @@
      <Compile Include="Assets\Scripts\Factory.cs" />
      <Compile Include="Assets\Scripts\FactoryDrop.cs" />
      <Compile Include="Assets\Scripts\FactoryInfo.cs" />
+     <Compile Include="Assets\Scripts\FactoryResource.cs" />
      <Compile Include="Assets\Scripts\FactoryResourceInfo.cs" />
      <Compile Include="Assets\Scripts\GameLoad.cs" />
      <Compile Include="Assets\Scripts\GameStatistic.cs" />
