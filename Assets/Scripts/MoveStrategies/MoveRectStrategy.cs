@@ -12,7 +12,7 @@ namespace Assets.Scripts.MoveStrategies
         protected int RectSize;
         protected int StartRectSize;
 
-        public List<Vector3> ExpandPoints(Vector3 direction, Vector3 end_pos, int unitCount, Grid grid, int SizeX, int SizeZ)
+        public List<Vector3> ExpandPoints(Vector3 direction, Vector3 end_pos, int unitCount, Grid grid, Item item)
         {
             List<Vector3> NewCells = new List<Vector3>();
             if (!TryReverse)
@@ -34,7 +34,7 @@ namespace Assets.Scripts.MoveStrategies
             TryReverse = false;
         }
 
-        public List<Vector3> GetMoveCells(Vector3 direction, Vector3 end_pos, int unitCount, Grid grid, int SizeX, int SizeZ)
+        public List<Vector3> GetMoveCells(Vector3 direction, Vector3 end_pos, int unitCount, Grid grid, Item item)
         {
             List<Vector3> PosList = new List<Vector3>();
             Vector3 right = Quaternion.Euler(0, 90f, 0) * direction;

@@ -268,6 +268,27 @@ public class ItemManager : MonoBehaviour, IGameManager {
         return instance;
     }
 
+    public void RemoveItem(Item item)
+    {
+        ReturnToPool(item);
+        ItemPool.Remove(item.GetUniqueID());
+        AddItemCount(item.GetID(), -1);
+        FreeGrid(item);
+    }
+
+    void FreeGrid(Item item)
+    {
+        int posX = (int)item.GetPosition().x - 1;
+        int posZ = (int)item.GetPosition().y - 1;
+        for (int i = posX; i < posX + item.SizeX; ++i)
+        {
+            for (int j = posZ; j < posZ + item.SizeZ; ++j)
+            {
+                GameGrid.GetGrid()[i, j] = 0;
+            }
+        }
+    }
+
     public static void ReturnToPool(Item item)
     {
         item.gameObject.SetActive(false);

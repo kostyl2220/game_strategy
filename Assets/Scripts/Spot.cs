@@ -81,11 +81,11 @@ public class Spot {
         return Neighbours;   
     }
 
-    public List<UnitPoint> MakeSpot(Vector3 direction, Vector3 Center, Grid grid, int unitCount, int SizeX = 1, int SizeZ = 1)
+    public List<UnitPoint> MakeSpot(Vector3 direction, Vector3 Center, Grid grid, int unitCount, Item item)
     {
         this.grid = grid;
         Strategy.InitStrategy();
-        List<Vector3> EndCells = Strategy.GetMoveCells(direction, Center, unitCount, grid, SizeX, SizeZ);
+        List<Vector3> EndCells = Strategy.GetMoveCells(direction, Center, unitCount, grid, item);
         spotsArray.Clear();
         activeSpots.Clear();
 
@@ -111,7 +111,7 @@ public class Spot {
 
             if (CoveredPoints.Count < unitCount)
             {
-                List<Vector3> NewCells = Strategy.ExpandPoints(direction, Center, unitCount, grid, SizeX, SizeZ);
+                List<Vector3> NewCells = Strategy.ExpandPoints(direction, Center, unitCount, grid, item);
                 foreach (var cell in NewCells)
                     AddToCover(new UnitPoint(grid, cell));
 

@@ -130,7 +130,7 @@ public class MouseSelection : MonoBehaviour {
         if (Physics.Raycast(ray, out hit, 20f, layer_mask))
         {
             spotAlgorithm.SetStrategy(new MoveRectDirFrontStrategy());
-            FindPath(hit.point, false, 1, 1);
+            FindPath(hit.point, false, null);
             return true;
         }
         return false;
@@ -148,7 +148,7 @@ public class MouseSelection : MonoBehaviour {
             {
                 spotAlgorithm.SetStrategy(new AttackCircleStratery());
                 Vector3 unitPos = grid.GetPositionByXZ(it.GetPosition().x, it.GetPosition().y, 0);            
-                FindPath(unitPos, true, it.SizeX, it.SizeZ);
+                FindPath(unitPos, true, it);
                 return true;
             }
         }
@@ -169,17 +169,18 @@ public class MouseSelection : MonoBehaviour {
         return center;
     }
 
-    public void FindPath(Vector3 EndPos, bool AttackOnEnd, int SizeX, int SizeZ)
+    public void FindPath(Vector3 EndPos, bool AttackOnEnd, Item item)
     {
         Vector2 center_end_pos = grid.GetPointByPosition(EndPos);
 
+        //TODO remove check
         if (!AttackOnEnd && !grid.IsWalkablePoint(center_end_pos))
             return;
 
         if (grid.InRangePoint(center_end_pos.x + 1, center_end_pos.y + 1))
         {
             Vector3 moveDirection = (EndPos - selected_units[0].transform.position).normalized;
-            List<Spot.UnitPoint> Spot = spotAlgorithm.MakeSpot(moveDirection, EndPos, grid, selected_units.Count, SizeX, SizeZ);
+            List<Spot.UnitPoint> Spot = spotAlgorithm.MakeSpot(moveDirection, EndPos, grid, selected_units.Count, item);
 
             if (Spot.Count == 0)
             {
@@ -201,6 +202,7 @@ public class MouseSelection : MonoBehaviour {
                 Nodes.RemoveAt(0);
                 unit.SetGrid(grid);
                 unit.SetEndDirection(EndDirection);
+                unit.SetEndTarget(item);
                 unit.MoveByPoints(Nodes);
             }
         }

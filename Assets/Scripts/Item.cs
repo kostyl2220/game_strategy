@@ -35,14 +35,17 @@ public class Item : MonoBehaviour {
         return Name;
     }
 
-    public void GetDamage(float damage)
+    public bool GetDamage(float damage)
     {
         HP -= damage;
         if (HP < 0)
         {
             //Dead
-            Destroy(gameObject);
+            //Remove from items
+            Managers.Items.RemoveItem(this);
+            return false;
         }
+        return true;
     }
 
     public void SetData(Item item)
@@ -148,5 +151,10 @@ public class Item : MonoBehaviour {
     public virtual Vector2 GetPosition()
     {
         return Position;
+    }
+
+    public bool IsAlive()
+    {
+        return HP > 0;
     }
 } 

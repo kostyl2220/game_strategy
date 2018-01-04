@@ -25,6 +25,8 @@ public class Unit : Item {
     private Grid grid;
 
     private Item target;
+    private bool IsAttack;
+    private float LastReload = -1000f;
     private List<Node> movePoints;
 
     private Coroutine attackCoroutine;
@@ -34,7 +36,7 @@ public class Unit : Item {
     private Vector3 EndDirection;
     // Use this for initialization
     void Start () {
-        _charController = transform.GetComponent<CharacterController>();
+        IsAttack = false;
     }
 	
 	// Update is called once per frame
@@ -60,6 +62,7 @@ public class Unit : Item {
                         Animation.Stop();
                         Animation.Play(IdleAnim);
                     }
+                    StartAttack();
                     inMove = false;
                     return;
                 }
@@ -96,6 +99,12 @@ public class Unit : Item {
             // SendMessage("SetSpeed", move_speed * speedModifer, SendMessageOptions.DontRequireReceiver);
         }
 	}
+
+    public void SetEndTarget(Item item)
+    {
+        IsAttack = false;
+        target = item;
+    }
 
     public void SetGrid(Grid outer_grid)
     {
@@ -202,11 +211,32 @@ public class Unit : Item {
 
     public void StartAttack()
     {
-        attackCoroutine = StartCoroutine(Attack());
+        if (target)
+            IsAttack = true;
     }
 
     public override void HideInfo()
     {
          
+    }
+
+    void Update()
+    {
+        if (IsAttack && target && Time.time > LastReload + reload_time)
+        {
+            if (animator)
+            {
+                animator.SetTrigger(AttackAnim);
+            }
+            if (Animation)
+            {
+                Animation.Stop();
+                Animation.Play(AttackAnim);
+            }
+            if (!target.GetDamage(attack))
+                target = null;
+            //ATTACK ANIMATION;
+            LastReload = Time.time;
+        }
     }
 }

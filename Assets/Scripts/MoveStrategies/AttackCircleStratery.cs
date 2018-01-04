@@ -10,15 +10,18 @@ namespace Assets.Scripts.MoveStrategies
     {
         protected int Radius;
 
-        public List<Vector3> ExpandPoints(Vector3 direction, Vector3 end_pos, int unitCount, Grid grid, int SizeX, int SizeZ)
+        public List<Vector3> ExpandPoints(Vector3 direction, Vector3 end_pos, int unitCount, Grid grid, Item item)
         {
             Radius++;
-            return GetMoveCells(direction, end_pos, unitCount, grid, SizeX, SizeZ);
+            return GetMoveCells(direction, end_pos, unitCount, grid, item);
         }
 
-        public List<Vector3> GetMoveCells(Vector3 direction, Vector3 end_pos, int unitCount, Grid grid, int SizeX, int SizeZ)
+        public List<Vector3> GetMoveCells(Vector3 direction, Vector3 end_pos, int unitCount, Grid grid, Item item)
         {
             List<Vector3> NewPoints = new List<Vector3>();
+            if (item == null)
+                return NewPoints;
+
             Vector2 CenterXZ = grid.GetPointByPosition(end_pos);
             Debug.Log(CenterXZ);
 
@@ -28,9 +31,9 @@ namespace Assets.Scripts.MoveStrategies
             float GridSize = grid.Size;
 
             int X0 = X - Radius;
-            int X1 = X + SizeX + Radius - 1;
+            int X1 = X + item.SizeX + Radius - 1;
 
-            for (int z = -Radius + 1; z < SizeZ + Radius - 1; z++)
+            for (int z = -Radius + 1; z < item.SizeZ + Radius - 1; z++)
             {
                 Vector3 leftPos = grid.GetPositionByXZ(X0 + 1, Z + z + 1, 0);
                 
@@ -45,9 +48,9 @@ namespace Assets.Scripts.MoveStrategies
 
             //up & down
             int Z0 = Z - Radius;
-            int Z1 = Z + SizeZ + Radius - 1;
+            int Z1 = Z + item.SizeZ + Radius - 1;
 
-            for (int x = -Radius + 1; x < SizeX + Radius - 1; x++)
+            for (int x = -Radius + 1; x < item.SizeX + Radius - 1; x++)
             {
                 Vector3 downPos = grid.GetPositionByXZ(X + x + 1, Z0 + 1, 0);
 
