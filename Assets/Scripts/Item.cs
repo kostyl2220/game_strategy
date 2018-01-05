@@ -15,10 +15,14 @@ public class Item : MonoBehaviour {
     public int itemId;
     protected int uniqueId;
     public int level;
-    protected double HP;
+    protected double HP = 0;
     
     protected Vector2 Position;
 
+
+    //event system
+    public delegate void OnDamageReceive(double Hp, double MaxHP, double damage);
+    public event OnDamageReceive EventOnDamage;
     //remove level and rotation to item
     // Use this for initialization
     void Start () {
@@ -38,6 +42,7 @@ public class Item : MonoBehaviour {
     public bool GetDamage(float damage)
     {
         HP -= damage;
+        TriggerOnDamage(damage);
         if (HP < 0)
         {
             //Dead
@@ -60,6 +65,13 @@ public class Item : MonoBehaviour {
     public void SetHP(double HP)
     {
         this.HP = HP;
+        TriggerOnDamage(0);
+    }
+
+    void TriggerOnDamage(double damage)
+    {
+        if (EventOnDamage != null)
+            EventOnDamage(HP, MaxHP, damage);
     }
 
     public double GetHP()

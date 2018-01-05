@@ -64,6 +64,7 @@
      <Compile Include="Assets\Scripts\GameStatistic.cs" />
      <Compile Include="Assets\Scripts\GenerateDetails.cs" />
      <Compile Include="Assets\Scripts\Grid.cs" />
+     <Compile Include="Assets\Scripts\HpBar.cs" />
      <Compile Include="Assets\Scripts\Item.cs" />
      <Compile Include="Assets\Scripts\ItemInfo.cs" />
      <Compile Include="Assets\Scripts\Managers\BarackManager.cs" />

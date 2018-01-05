@@ -63,11 +63,13 @@ public class ItemInfo : MonoBehaviour {
         if (inner_item != null)
         {
             inner_item.RemoveData();
+            inner_item.EventOnDamage -= OnDamageReceive;
         }
 
         int item_level = item.GetLevel();
         int item_id = item.GetID();
         inner_item = item;
+        item.EventOnDamage += OnDamageReceive;
 
         icon.material = item.material;
         text.text = item.Name;
@@ -96,6 +98,11 @@ public class ItemInfo : MonoBehaviour {
                 levelResources = StoreManager.GetItemPrice(item_id, item_level);
             }
         }
+    }
+
+    void OnDamageReceive(double Hp, double MaxHp, double damage)
+    {
+        DrawHP(Hp, MaxHp);
     }
 
     void DrawHP(double HP, double fullHP)
