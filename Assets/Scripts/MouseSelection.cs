@@ -124,7 +124,7 @@ public class MouseSelection : MonoBehaviour {
 
     bool PointToPosition(Vector2 TouchPosition)
     {
-        int layer_mask = LayerMask.GetMask("Grid", "Item");
+        int layer_mask = LayerMask.GetMask("Grid");
         RaycastHit hit;
         Ray ray = Camera.main.ScreenPointToRay(TouchPosition);
         if (Physics.Raycast(ray, out hit, 20f, layer_mask))

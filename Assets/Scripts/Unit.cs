@@ -26,7 +26,10 @@ public class Unit : Item {
 
     private Item target;
     private bool IsAttack;
+    private bool Hit;
     private float LastReload = -1000f;
+
+    public float DamageTimeKoef = 0.8f;
     private List<Node> movePoints;
 
     private Coroutine attackCoroutine;
@@ -37,6 +40,7 @@ public class Unit : Item {
     // Use this for initialization
     void Start () {
         IsAttack = false;
+        Hit = false;
     }
 	
 	// Update is called once per frame
@@ -103,6 +107,7 @@ public class Unit : Item {
     public void SetEndTarget(Item item)
     {
         IsAttack = false;
+        Hit = false;
         target = item;
     }
 
@@ -222,21 +227,36 @@ public class Unit : Item {
 
     void Update()
     {
-        if (IsAttack && target && Time.time > LastReload + reload_time)
+        if (IsAttack && target)
         {
-            if (animator)
-            {
-                animator.SetTrigger(AttackAnim);
+            if (Time.time > LastReload + reload_time) {
+                if (animator)
+                {
+                    animator.SetTrigger(AttackAnim);
+                }
+                if (Animation)
+                {
+                    Animation.Stop();
+                    Animation.Play(AttackAnim);
+                }
+                //ATTACK ANIMATION;
+                Hit = true;
+                LastReload = Time.time;
             }
-            if (Animation)
+            if (Time.time > LastReload + reload_time * DamageTimeKoef && Hit)
             {
-                Animation.Stop();
-                Animation.Play(AttackAnim);
+                if (!target.GetDamage(attack))
+                {
+                    target = null;
+                    if (Animation)
+                    {
+                        Animation.Stop();
+                        Animation.Play(IdleAnim);
+                    }
+                }
+                Hit = false;
             }
-            if (!target.GetDamage(attack))
-                target = null;
-            //ATTACK ANIMATION;
-            LastReload = Time.time;
         }
+        
     }
 }

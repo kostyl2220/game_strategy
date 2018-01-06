@@ -17,8 +17,13 @@ public class Store : MonoBehaviour {
     
     // Use this for initialization
     //TODO SEPARATE ICONS FROM ITEMS
-    void Start () {
+    void Awake () {
+       
+    }
 
+    public Store()
+    {
+        storeCells = new List<StoreCell>();
     }
 
     void SetPrices()
@@ -28,7 +33,7 @@ public class Store : MonoBehaviour {
 
     public void SetItems(IEnumerable items)
     {
-        storeCells = new List<StoreCell>();
+        storeCells.Clear();
         int num = 0;
         foreach (Item childItem in items)
         { 

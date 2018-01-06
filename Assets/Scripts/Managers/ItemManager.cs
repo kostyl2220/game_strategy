@@ -300,5 +300,6 @@ public class ItemManager : MonoBehaviour, IGameManager {
         if (!CountOfItems.ContainsKey(id))
             CountOfItems[id] = 0;
         CountOfItems[id] += count;
+        Managers.Store.GetStore().UpdateRequirements();
     }
 }

@@ -9,7 +9,6 @@ public class StoreManager : MonoBehaviour, IGameManager {
     public ManagerStatus status { get; private set; }
     public Store store;
     public static Dictionary<int, Dictionary<int, Dictionary<int, int>>> itemPrices;
-    private static Store inner_store;
 
     public void Startup()
     {
@@ -30,7 +29,6 @@ public class StoreManager : MonoBehaviour, IGameManager {
             dr.Close();
         }
         store.SetItems(Managers.Items.GetStoreItems());
-        inner_store = store;
         status = ManagerStatus.Started;
     }
 
@@ -43,9 +41,9 @@ public class StoreManager : MonoBehaviour, IGameManager {
         return itemPrices[item_id][level];
     }
 
-    public static Store GetStore()
+    public Store GetStore()
     {
-        return inner_store;
+        return store;
     }
 
     public static bool IsItemPrice(int item_id)

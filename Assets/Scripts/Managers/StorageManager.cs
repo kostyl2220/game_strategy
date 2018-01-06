@@ -95,7 +95,7 @@ public class StorageManager : MonoBehaviour, IGameManager {
         else
             userResources[resource_id] += count;
         stat_panel.UpdatePanel();
-        StoreManager.GetStore().UpdateRequirements();
+        Managers.Store.GetStore().UpdateRequirements();
     }
 
     public static bool EnoughResources(Dictionary<int, int> res)
@@ -128,7 +128,7 @@ public class StorageManager : MonoBehaviour, IGameManager {
             }
         }
         stat_panel.UpdatePanel();
-        StoreManager.GetStore().UpdateRequirements();
+        Managers.Store.GetStore().UpdateRequirements();
     }
 
     public static Dictionary<int, int> GetUserResources()

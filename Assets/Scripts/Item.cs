@@ -16,6 +16,7 @@ public class Item : MonoBehaviour {
     protected int uniqueId;
     public int level;
     protected double HP = 0;
+    private bool Dead;
     
     protected Vector2 Position;
 
@@ -43,11 +44,15 @@ public class Item : MonoBehaviour {
     {
         HP -= damage;
         TriggerOnDamage(damage);
-        if (HP < 0)
+        if (HP <= 0)
         {
             //Dead
             //Remove from items
-            Managers.Items.RemoveItem(this);
+            if (!Dead)
+            {
+                Managers.Items.RemoveItem(this);
+                Dead = true;
+            }
             return false;
         }
         return true;
@@ -65,6 +70,7 @@ public class Item : MonoBehaviour {
     public void SetHP(double HP)
     {
         this.HP = HP;
+        Dead = HP <= 0;
         TriggerOnDamage(0);
     }
 

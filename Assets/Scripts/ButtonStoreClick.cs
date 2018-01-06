@@ -19,6 +19,8 @@ public class ButtonStoreClick : MonoBehaviour {
         if (store)
         {
             store.SetActive(Show);
+            if (Show)
+                Managers.Store.GetStore().UpdateRequirements();
             Managers.Units.DisableAllSelection();
         }
     }
