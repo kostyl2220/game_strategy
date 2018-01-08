@@ -410,6 +410,7 @@ public class Grid : MonoBehaviour {
         if (CanPlace)
         {
             CanPlace = false;
+            ActiveItem.SetPlayerName(Managers.Session.GetPlayerName());
             int NewID = ItemManager.AddItemToPool(ActiveItem, new Vector2(activeGrid.X, activeGrid.Z), tempRotation);
             ActiveItem = null;
             MixGrids(NewID);

@@ -20,11 +20,11 @@ public class TowerChar
 public class TowerBullet
 {
     public String Name { get; }
-    public double Damage { get; }
+    public float Damage { get; }
     public double Radius { get; }
     public Bullet Bullet { get; }
     
-    public TowerBullet(String name, String prefab_path, double dam, double rad)
+    public TowerBullet(String name, String prefab_path, float dam, double rad)
     {
         Name = name;
         Damage = dam;
@@ -103,7 +103,7 @@ public class TowerManager : MonoBehaviour, IGameManager {
                 String prefab_path = dr["prefab"].ToString();
                 double damage = Convert.ToDouble(dr["damage"]);
                 double radius = Convert.ToDouble(dr["radius"]);
-                towerBullets[id] = new TowerBullet(name, prefab_path, damage, radius);
+                towerBullets[id] = new TowerBullet(name, prefab_path, (float)damage, radius);
             }
             dr.Close();
         }

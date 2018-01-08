@@ -78,3 +78,7 @@ E:\Unity\Strategy\obj\Debug\Assembly-CSharp.csprojResolveAssemblyReference.cache
 E:\Unity\Strategy\obj\Debug\Assembly-CSharp.csproj.CoreCompileInputs.cache
 E:\Unity\Strategy\obj\Debug\Assembly-CSharp.dll
 E:\Unity\Strategy\obj\Debug\Assembly-CSharp.pdb
+E:\Unity\game_strategy\obj\Debug\Assembly-CSharp.csprojResolveAssemblyReference.cache
+E:\Unity\game_strategy\obj\Debug\Assembly-CSharp.csproj.CoreCompileInputs.cache
+E:\Unity\game_strategy\obj\Debug\Assembly-CSharp.dll
+E:\Unity\game_strategy\obj\Debug\Assembly-CSharp.pdb

@@ -104,6 +104,15 @@ public class Unit : Item {
         }
 	}
 
+    protected override void RemoveFromManager()
+    {
+        Managers.Units.RemoveUnit(this);
+        IsAttack = false;
+        Hit = false;
+        inMove = false;
+        target = null;
+    }
+
     public void SetEndTarget(Item item)
     {
         IsAttack = false;
@@ -205,19 +214,12 @@ public class Unit : Item {
         unit_info.ShowUpgrade(show);
     }
 
-    public IEnumerator Attack()
-    {
-        while (target)
-        {
-            target.GetDamage(attack);
-            yield return new WaitForSeconds(reload_time);
-        }
-    }
-
     public void StartAttack()
     {
-        if (target)
+        if (target && !IsFriend(target))
             IsAttack = true;
+        else
+            target = null;
     }
 
     public override void HideInfo()

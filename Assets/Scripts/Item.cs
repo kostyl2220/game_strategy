@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -11,12 +12,12 @@ public class Item : MonoBehaviour {
     public int rotation;
     public double MaxHP;
 
-    public bool isEnemy = false;
+    public String PlayerName = "Player";
     public int itemId;
     protected int uniqueId;
     public int level;
-    protected double HP = 0;
-    private bool Dead;
+    public double HP = 0;
+    private bool Dead = false;
     
     protected Vector2 Position;
 
@@ -35,6 +36,16 @@ public class Item : MonoBehaviour {
 		
 	}
 
+    public String GetPlayerName()
+    {
+        return PlayerName;
+    }
+
+    public bool IsFriend(Item item)
+    {
+        return item.PlayerName == PlayerName;
+    }
+
     public string GetName()
     {
         return Name;
@@ -50,12 +61,17 @@ public class Item : MonoBehaviour {
             //Remove from items
             if (!Dead)
             {
-                Managers.Items.RemoveItem(this);
+                RemoveFromManager();
                 Dead = true;
             }
             return false;
         }
         return true;
+    }
+
+    protected virtual void RemoveFromManager()
+    {
+        Managers.Items.RemoveItem(this);
     }
 
     public void SetData(Item item)
@@ -65,6 +81,11 @@ public class Item : MonoBehaviour {
         SizeZ = item.SizeZ;
         itemId = item.GetID();
         MaxHP = item.GetMaxHP();
+    }
+
+    public void SetPlayerName(String name)
+    {
+        PlayerName = name;
     }
 
     public void SetHP(double HP)

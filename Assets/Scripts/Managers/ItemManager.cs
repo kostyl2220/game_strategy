@@ -190,7 +190,7 @@ public class ItemManager : MonoBehaviour, IGameManager {
     {
         int[,] grid = new int[GameGrid.CountInX, GameGrid.CountInZ];
 
-        using (IDataReader dr = Managers.Database.GetSQLiteQuery(String.Format("SElECT Save.item_id, pos_x AS x, pos_z AS z, rotation AS rot, Save.level, Save.hp FROM Save WHERE session_id = {0};"
+        using (IDataReader dr = Managers.Database.GetSQLiteQuery(String.Format("SElECT Save.item_id, pos_x AS x, pos_z AS z, rotation AS rot, Save.level, Save.hp, Save.player FROM Save WHERE session_id = {0};"
             , Managers.Session.GetSession())))
         {
             while (dr.Read())
@@ -201,10 +201,12 @@ public class ItemManager : MonoBehaviour, IGameManager {
                 int rot = Convert.ToInt32(dr["rot"]);
                 int level = Convert.ToInt32(dr["level"]);
                 double hp = Convert.ToDouble(dr["hp"]);
+                String player = dr["player"].ToString();
 
                 Item item = GetItemFromPool(id, new Vector3());
                 item.SetLevel(level);
                 item.SetHP(hp);
+                item.SetPlayerName(player);
 
                 item.transform.position = GameGrid.GetPositionByXZ(posX + (item.SizeX - 1) / 2.0f, posZ + (item.SizeZ - 1) / 2.0f, 0);
                 item.SetPosition(new Vector2(posX, posZ));
@@ -236,8 +238,8 @@ public class ItemManager : MonoBehaviour, IGameManager {
         foreach (PooledItem item in ItemPool.Values)
         {
             Vector2 pos = item.Item.GetPosition();
-            Managers.Database.PutSQLiteQuery(String.Format("INSERT INTO Save(item_id, pos_x, pos_z, rotation, level, hp, session_id) VALUES({0}, {1}, {2}, {3}, {4}, {5}, {6})", 
-                item.Item.GetID(), pos.x, pos.y, item.Rotation, item.Item.GetLevel(), item.Item.GetHP(), Managers.Session.GetSession()));
+            Managers.Database.PutSQLiteQuery(String.Format("INSERT INTO Save(item_id, pos_x, pos_z, rotation, level, hp, player, session_id) VALUES({0}, {1}, {2}, {3}, {4}, {5}, \"{6}\", {7})", 
+                item.Item.GetID(), pos.x, pos.y, item.Rotation, item.Item.GetLevel(), item.Item.GetHP(), item.Item.GetPlayerName(), Managers.Session.GetSession()));
         }
     }
 

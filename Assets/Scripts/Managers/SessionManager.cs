@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -13,6 +14,11 @@ public class SessionManager : MonoBehaviour, IGameManager {
     public int GetSession()
     {
         return 1;
+    }
+
+    public String GetPlayerName()
+    {
+        return "Player";
     }
 
     // Use this for initialization

@@ -76,6 +76,7 @@ public class ProtectionBuilding : Item {
                     Quaternion rot = Quaternion.AngleAxis(-1 * angle, ShootPoint.transform.right);
                     Bullet bullet = Instantiate(tower_bullet.Bullet, ShootPoint.transform.position, rot * ShootPoint.rotation);
                     bullet.transform.position = ShootPoint.transform.position;
+                    bullet.SetDamage(tower_bullet.Damage);
 
                     Rigidbody bulletRigid = bullet.GetComponent<Rigidbody>();
                     bulletRigid.velocity = rot * ShootPoint.transform.forward * bullet_speed;
@@ -100,7 +101,7 @@ public class ProtectionBuilding : Item {
 
     void SetEnemyLook()
     {
-        int layer = LayerMask.GetMask("Enemy");
+        int layer = LayerMask.GetMask("Item");
         Collider[] hitColliders = Physics.OverlapSphere(transform.position, radius, layer);
         if (hitColliders.Length == 0)
         {
@@ -113,6 +114,10 @@ public class ProtectionBuilding : Item {
         Collider minColl = null;
         foreach (var collider in hitColliders)
         {
+            Item item = collider.GetComponent<Item>();
+            if (item && IsFriend(item))
+                continue;
+
             Vector3 dir = collider.transform.position - transform.position;
             Ray ray = new Ray(transform.position, dir);
             RaycastHit hit;

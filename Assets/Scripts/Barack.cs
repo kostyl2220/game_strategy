@@ -55,11 +55,10 @@ public class Barack : Item {
         Debug.Log(String.Format("Create unit {0}", unit_id));
         Vector2 PlacePoint = FindPlacePoint();
         Debug.Log(PlacePoint);
-       
-
-        Unit unit = Managers.Units.GetNewUnit(unit_id);
+        
         Vector3 endPos = Managers.Items.GameGrid.GetPositionByXZ(PlacePoint.x, PlacePoint.y, 0);
-        unit.transform.position = endPos;
+        Unit unit = Managers.Units.GetNewUnit(unit_id, endPos);
+        unit.SetPlayerName(PlayerName);
         unit.InitUnit();
         //Vector2 startPos = Managers.Items.GameGrid.GetPointByPosition(transform.position);
     

@@ -57,6 +57,14 @@ public class UnitManager : MonoBehaviour, IGameManager {
         selection.UnSelectAll();
     }
 
+    public void RemoveUnit(Unit unit)
+    {
+        units.Remove(unit.GetUniqueID());
+        ItemManager.ReturnToPool(unit);
+        if (selection.GetSelectedUnits().Contains(unit))
+            selection.GetSelectedUnits().Remove(unit);
+    }
+
     public void CheckOnUnit(Item item)
     {
         int item_id = item.GetID();
@@ -83,7 +91,7 @@ public class UnitManager : MonoBehaviour, IGameManager {
 
     void LoadSession()
     {
-        using (IDataReader dr = Managers.Database.GetSQLiteQuery(String.Format("SElECT SavedUnits.unit_id AS item_id, pos_x AS x, pos_z AS z, rotation AS rot, SavedUnits.level, SavedUnits.hp FROM SavedUnits WHERE session_id = {0};"
+        using (IDataReader dr = Managers.Database.GetSQLiteQuery(String.Format("SElECT SavedUnits.unit_id AS item_id, pos_x AS x, pos_z AS z, rotation AS rot, SavedUnits.level, SavedUnits.hp, SavedUnits.player FROM SavedUnits WHERE session_id = {0};"
             , Managers.Session.GetSession())))
         {
             while (dr.Read())
@@ -94,12 +102,12 @@ public class UnitManager : MonoBehaviour, IGameManager {
                 float rot = (float)Convert.ToDouble(dr["rot"]);
                 int level = Convert.ToInt32(dr["level"]);
                 double hp = Convert.ToDouble(dr["hp"]);
+                String player = dr["player"].ToString();
 
-                Unit item = GetNewUnit(id);
+                Unit item = GetNewUnit(id, new Vector3(posX, 0, posZ));
                 item.SetLevel(level);
                 item.SetHP(hp);
-
-                item.transform.position = new Vector3(posX, 0, posZ);
+                item.SetPlayerName(player);
 
                 item.transform.rotation = Quaternion.Euler(0, rot, 0);
 
@@ -115,8 +123,8 @@ public class UnitManager : MonoBehaviour, IGameManager {
         foreach (Unit item in units.Values)
         {
             Vector2 pos = new Vector2(item.transform.position.x, item.transform.position.z);
-            Managers.Database.PutSQLiteQuery(String.Format("INSERT INTO SavedUnits(unit_id, pos_x, pos_z, rotation, level, hp, session_id) VALUES({0}, {1}, {2}, {3}, {4}, {5}, {6})",
-                item.GetID(), pos.x, pos.y, item.transform.rotation.eulerAngles.y, item.GetLevel(), item.GetHP(), Managers.Session.GetSession()));
+            Managers.Database.PutSQLiteQuery(String.Format("INSERT INTO SavedUnits(unit_id, pos_x, pos_z, rotation, level, hp, player, session_id) VALUES({0}, {1}, {2}, {3}, {4}, {5}, \"{6}\", {7})",
+                item.GetID(), pos.x, pos.y, item.transform.rotation.eulerAngles.y, item.GetLevel(), item.GetHP(), item.GetPlayerName(), Managers.Session.GetSession()));
         }
     }
 
@@ -184,22 +192,15 @@ public class UnitManager : MonoBehaviour, IGameManager {
         return UnitLevels[unit_id][level];
     }
 
-    public Unit GetNewUnit(int unit_id)
+    public Unit GetNewUnit(int unit_id, Vector3 pos)
     {
-        Item item = ItemManager.GetItemByID(unit_id);
-        Unit unit = item.GetComponent<Unit>();
-        if (!unit)
-            return null;
+        Unit newUnit = ItemManager.GetItemFromPool(unit_id, pos).GetComponent<Unit>();
 
-        Unit newUnit = Instantiate(unit);
-        newUnit.gameObject.SetActive(true);
-        newUnit.SetData(unit);
         newUnit.SetUniqueID(unic_unit_id);
-        newUnit.transform.localScale = new Vector3(1, 1, 1);
         units[unic_unit_id] = newUnit;
 
         newUnit.SetLevel(1);
-        newUnit.SetHP(unit.GetMaxHP());
+        newUnit.SetHP(newUnit.GetMaxHP());
         newUnit.transform.SetParent(unitPool.transform);
         unic_unit_id++;
         return newUnit;

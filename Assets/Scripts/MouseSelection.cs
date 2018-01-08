@@ -25,6 +25,11 @@ public class MouseSelection : MonoBehaviour {
         spotAlgorithm = new Spot();
     }
 
+    public List<Unit> GetSelectedUnits()
+    {
+        return selected_units;
+    }
+
     // Update is called once per frame
     void Update()
     {
