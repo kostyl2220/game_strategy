@@ -55,6 +55,12 @@
      <Compile Include="Assets\Scripts\ButtonNetClick.cs" />
      <Compile Include="Assets\Scripts\ButtonStoreClick.cs" />
      <Compile Include="Assets\Scripts\CameraMove.cs" />
+     <Compile Include="Assets\Scripts\FSM\AttackState.cs" />
+     <Compile Include="Assets\Scripts\FSM\FSM.cs" />
+     <Compile Include="Assets\Scripts\FSM\IdleState.cs" />
+     <Compile Include="Assets\Scripts\FSM\MoveState.cs" />
+     <Compile Include="Assets\Scripts\FSM\RotateState.cs" />
+     <Compile Include="Assets\Scripts\FSM\State.cs" />
      <Compile Include="Assets\Scripts\Factory.cs" />
      <Compile Include="Assets\Scripts\FactoryDrop.cs" />
      <Compile Include="Assets\Scripts\FactoryInfo.cs" />

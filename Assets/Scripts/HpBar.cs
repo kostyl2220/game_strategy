@@ -8,6 +8,7 @@ public class HpBar : MonoBehaviour {
     public Text HPtext;
     public Item item;
 
+    private Canvas Can;
     //HP bar
     private float totalHPbarWidth;
 
@@ -23,12 +24,15 @@ public class HpBar : MonoBehaviour {
             if (item.GetHP() > 0 && item.GetHP() != item.GetMaxHP())
                 gameObject.SetActive(true);
         }
-
+        Can = gameObject.GetComponent<Canvas>();
     }
 	
 	// Update is called once per frame
 	void Update () {
-		
+        Vector3 Direction = Camera.main.transform.position - transform.position;
+        Direction.x = 0;
+        Quaternion rotation = Quaternion.LookRotation(Direction);
+        transform.rotation = rotation;
 	}
     
     void OnDamageReceive(double Hp, double MaxHp, double damage)

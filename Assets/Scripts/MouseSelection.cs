@@ -206,7 +206,7 @@ public class MouseSelection : MonoBehaviour {
                 Nodes.Add(new Node(new Vector2(Spot[i].RealPos.x, Spot[i].RealPos.z), null));
                 Nodes.RemoveAt(0);
                 unit.SetGrid(grid);
-                unit.SetEndDirection(EndDirection);
+                unit.SetEndDirection(moveDirection);
                 unit.SetEndTarget(item);
                 unit.MoveByPoints(Nodes);
             }

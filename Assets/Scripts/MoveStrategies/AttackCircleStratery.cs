@@ -23,7 +23,6 @@ namespace Assets.Scripts.MoveStrategies
                 return NewPoints;
 
             Vector2 CenterXZ = grid.GetPointByPosition(end_pos);
-            Debug.Log(CenterXZ);
 
             //left & right
             int X = (int)CenterXZ.x;

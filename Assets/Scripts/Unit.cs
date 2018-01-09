@@ -1,4 +1,5 @@
 ﻿using Assets.Scripts;
+using Assets.Scripts.FSM;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -19,13 +20,13 @@ public class Unit : Item {
     private float reload_time;
 
     private bool Selected = false;
-    private bool inMove = false;
+
     private Vector3 destination;
     private CharacterController _charController;
     private Grid grid;
 
     private Item target;
-    private bool IsAttack;
+
     private bool Hit;
     private float LastReload = -1000f;
 
@@ -36,88 +37,40 @@ public class Unit : Item {
 
     private UnitInfo unit_info;
 
-    private Vector3 EndDirection;
+    private Quaternion EndDirection;
+    private State PerformState;
     // Use this for initialization
     void Start () {
-        IsAttack = false;
         Hit = false;
+        PerformState = new IdleState(this);
     }
+
+    public void SetState(State State)
+    {
+        PerformState = State;
+    } 
 	
 	// Update is called once per frame
 	void FixedUpdate() {
-		if (inMove)
-        {
-            //Debug.Log("Move");
-            Vector3 direction = destination - transform.position;
-            direction.y = 0;
-
-            //Debug.Log(direction.magnitude);
-            if (direction.magnitude < 0.1f)
-            {
-                if (movePoints.Count == 0)
-                {
-                    if (animator)
-                    {
-                        animator.SetFloat("speedv", 0.0f);
-                        animator.transform.localPosition = new Vector3(0, 0, 0);
-                    }
-                    if (Animation)
-                    {
-                        Animation.Stop();
-                        Animation.Play(IdleAnim);
-                    }
-                    StartAttack();
-                    inMove = false;
-                    return;
-                }
-
-                SetNextMovePoint();
-                direction = destination - transform.position;
-                direction.y = 0;
-            }
-
-            Quaternion targetRotation = Quaternion.LookRotation(direction);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotation_speed * Time.deltaTime);
-
-            Vector3 forward = transform.TransformDirection(Vector3.forward);
-
-            float speedModifer = Vector3.Dot(forward, direction.normalized);
-
-            speedModifer = Mathf.Clamp01(speedModifer);
-
-            float speed = move_speed * speedModifer;
-            direction = forward * speed * Time.deltaTime;
-            //Передаем движение в управление персонажем
-
-            transform.position += direction;
-            //_charController.SimpleMove(direction);
-
-            //Сообщаем анимации о нашей скорости
-            if (animator)
-                animator.SetFloat("speedv", move_speed * speedModifer);
-
-            if (Animation)
-            {
-                Animation[RunAnim].speed = speed;
-            }
-            // SendMessage("SetSpeed", move_speed * speedModifer, SendMessageOptions.DontRequireReceiver);
-        }
+        PerformState.Perform();
 	}
 
     protected override void RemoveFromManager()
     {
         Managers.Units.RemoveUnit(this);
-        IsAttack = false;
-        Hit = false;
-        inMove = false;
+        PerformState = new IdleState(this);
         target = null;
     }
 
     public void SetEndTarget(Item item)
     {
-        IsAttack = false;
         Hit = false;
         target = item;
+    }
+
+    public Item GetTarget()
+    {
+        return target;
     }
 
     public void SetGrid(Grid outer_grid)
@@ -151,7 +104,6 @@ public class Unit : Item {
 
     public void MoveByPoints(List<Node> Nodes)
     {
-        inMove = true;
         movePoints = Nodes;
         SetNextMovePoint();
 
@@ -160,6 +112,8 @@ public class Unit : Item {
             Animation.Stop();
             Animation.Play(RunAnim);
         }
+
+        PerformState = new MoveState(this);
     }
 
     public void Select(bool select)
@@ -168,21 +122,9 @@ public class Unit : Item {
         projector.gameObject.SetActive(select);
     }
 
-    public void Move(Vector3 movePos)
-    {
-        inMove = true;
-        destination = movePos;
-
-        if (Animation)
-        {
-            Animation.Stop();
-            Animation.Play(RunAnim);
-        }
-    }
-
     public void SetEndDirection(Vector3 EndDir)
     {
-        EndDirection = EndDir;
+        EndDirection = Quaternion.LookRotation(EndDir);
     }
 
     public override Vector2 GetPosition()
@@ -214,24 +156,19 @@ public class Unit : Item {
         unit_info.ShowUpgrade(show);
     }
 
-    public void StartAttack()
+    //Attack
+    public bool Attack()
     {
-        if (target && !IsFriend(target))
-            IsAttack = true;
-        else
-            target = null;
-    }
-
-    public override void HideInfo()
-    {
-         
-    }
-
-    void Update()
-    {
-        if (IsAttack && target)
+        if (target)
         {
-            if (Time.time > LastReload + reload_time) {
+            if (IsFriend(target))
+            {
+                target = null;
+                return false;
+            }
+
+            if (Time.time > LastReload + reload_time)
+            {
                 if (animator)
                 {
                     animator.SetTrigger(AttackAnim);
@@ -258,7 +195,79 @@ public class Unit : Item {
                 }
                 Hit = false;
             }
+            return true;
         }
-        
+        return false;
+    }
+
+    //Move method
+    public bool Move()
+    {
+        Vector3 direction = destination - transform.position;
+        direction.y = 0;
+
+        if (direction.magnitude < 0.1f)
+        {
+            if (movePoints.Count == 0)
+            {
+                if (animator)
+                {
+                    animator.SetFloat("speedv", 0.0f);
+                    animator.transform.localPosition = new Vector3(0, 0, 0);
+                }
+                if (Animation)
+                {
+                    Animation.Stop();
+                    Animation.Play(IdleAnim);
+                }
+                return false;
+            }
+
+            SetNextMovePoint();
+            direction = destination - transform.position;
+            direction.y = 0;
+        }
+
+        Quaternion targetRotation = Quaternion.LookRotation(direction);
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotation_speed * Time.deltaTime);
+
+        Vector3 forward = transform.TransformDirection(Vector3.forward);
+
+        float speedModifer = Vector3.Dot(forward, direction.normalized);
+
+        speedModifer = Mathf.Clamp01(speedModifer);
+
+        float speed = move_speed * speedModifer;
+        direction = forward * speed * Time.deltaTime;
+        //Передаем движение в управление персонажем
+
+        transform.position += direction;
+
+        //Сообщаем анимации о нашей скорости
+        if (animator)
+            animator.SetFloat("speedv", move_speed * speedModifer);
+
+        if (Animation)
+        {
+            Animation[RunAnim].speed = speed;
+        }
+
+        return true;
+    }
+
+    //Rotate
+    public bool Rotate()
+    {
+        if (Quaternion.Angle(transform.rotation, EndDirection) < 1.0f) 
+            return false;
+
+        //Debug.Log("Rotate");
+        transform.rotation = Quaternion.RotateTowards(transform.rotation, EndDirection, Time.deltaTime * 200);
+        return true;
+    }
+
+    void Update()
+    {
+
     }
 }
