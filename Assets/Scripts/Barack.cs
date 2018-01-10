@@ -52,7 +52,6 @@ public class Barack : Item {
 
     public void CreateUnit(int unit_id)
     {
-        Debug.Log(String.Format("Create unit {0}", unit_id));
         Vector2 PlacePoint = FindPlacePoint();
         Debug.Log(PlacePoint);
         

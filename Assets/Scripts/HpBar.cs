@@ -29,7 +29,7 @@ public class HpBar : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        Vector3 Direction = Camera.main.transform.position - transform.position;
+        Vector3 Direction = transform.position - Camera.main.transform.position;
         Direction.x = 0;
         Quaternion rotation = Quaternion.LookRotation(Direction);
         transform.rotation = rotation;

@@ -374,6 +374,7 @@ public class Grid : MonoBehaviour {
         tempRotation = 0;
         ActiveItem = CreateItem(item_id, CenterX + (item.SizeX - 1) / 2f, CenterZ + (item.SizeZ - 1) / 2f);
         ActiveItem.GetComponent<Collider>().enabled = false;
+        ActiveItem.SetHP(ActiveItem.GetMaxHP());
     }
 
     Item CreateItem(int item_id, float X, float Z)

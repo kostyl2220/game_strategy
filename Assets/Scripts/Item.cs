@@ -46,6 +46,11 @@ public class Item : MonoBehaviour {
         return item.PlayerName == PlayerName;
     }
 
+    public bool IsFriend(String Name)
+    {
+        return Name == PlayerName;
+    }
+
     public string GetName()
     {
         return Name;

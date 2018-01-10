@@ -42,6 +42,7 @@ public class Unit : Item {
     // Use this for initialization
     void Start () {
         Hit = false;
+        destination = transform.position;
         PerformState = new IdleState(this);
     }
 
@@ -198,6 +199,13 @@ public class Unit : Item {
             return true;
         }
         return false;
+    }
+
+    public Vector3 GetMoveDirection()
+    {
+        if (Vector3.Distance(destination, transform.position) < 0.05f)
+            return new Vector3(0, 0, 0);
+        return (destination - transform.position).normalized * move_speed;
     }
 
     //Move method
