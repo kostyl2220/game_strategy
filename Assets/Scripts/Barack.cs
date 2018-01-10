@@ -81,7 +81,6 @@ public class Barack : Item {
     {
         barack_info.SetBarack(this);
         barack_info.SetChars(Managers.Barack.GetBarackUnits(itemId, level));
-       //barack_info.SetHiddenInfo(Managers.Factory.GetFactory(itemId, level + 1));
     }
 
     public override void RemoveData()

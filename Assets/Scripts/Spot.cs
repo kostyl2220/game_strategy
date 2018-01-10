@@ -1,4 +1,5 @@
-﻿using Assets.Scripts.MoveStrategies;
+﻿using Assets.Scripts;
+using Assets.Scripts.MoveStrategies;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -81,8 +82,9 @@ public class Spot {
         return Neighbours;   
     }
 
-    public List<UnitPoint> MakeSpot(Vector3 direction, Vector3 Center, Grid grid, int unitCount, Item item)
+    public List<UnitPoint> MakeSpot(Vector3 StartPos, Vector3 Center, Grid grid, int unitCount, Item item, PathfindingA pathfindingA)
     {
+        Vector3 direction = (Center - StartPos).normalized;
         this.grid = grid;
         Strategy.InitStrategy();
         List<Vector3> EndCells = Strategy.GetMoveCells(direction, Center, unitCount, grid, item);
@@ -97,8 +99,14 @@ public class Spot {
         }
 
         Vector2 centerPos = grid.GetPointByPosition(Center);
+        Vector2 startPosInGrid = grid.GetPointByPosition(StartPos);
+
         foreach (var startPos in Strategy.GetStartPoints(centerPos, pointsToCover))
-            AddToSpot(new SpotPoint(startPos, grid.GetGrid()[(int)startPos.x, (int)startPos.y] == 0));
+        {
+            bool walkable = grid.GetGrid()[(int)startPos.x, (int)startPos.y] == 0;
+            if (walkable && pathfindingA.HasPath(startPos, startPosInGrid) || !walkable)
+                AddToSpot(new SpotPoint(startPos, walkable));
+        }
 
         while (CoveredPoints.Count < unitCount)
         {

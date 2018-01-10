@@ -184,8 +184,9 @@ public class MouseSelection : MonoBehaviour {
 
         if (grid.InRangePoint(center_end_pos.x + 1, center_end_pos.y + 1))
         {
+            pathfinding.SetGrid(grid.GetGrid());
             Vector3 moveDirection = (EndPos - selected_units[0].transform.position).normalized;
-            List<Spot.UnitPoint> Spot = spotAlgorithm.MakeSpot(moveDirection, EndPos, grid, selected_units.Count, item);
+            List<Spot.UnitPoint> Spot = spotAlgorithm.MakeSpot(selected_units[0].transform.position, EndPos, grid, selected_units.Count, item, pathfinding);
 
             if (Spot.Count == 0)
             {
@@ -193,7 +194,7 @@ public class MouseSelection : MonoBehaviour {
                 return;
             }
 
-            pathfinding.SetGrid(grid.GetGrid());
+
 
             for (int i = 0; i < selected_units.Count; ++i)
             {

@@ -40,6 +40,9 @@ public class ProtectionBuilding : Item {
 
     public void InitTower()
     {
+        if (TowerTop)
+            TowerTop.transform.rotation = transform.rotation;
+        Round.gameObject.SetActive(false);
         SetParams();
         startQuat = transform.rotation;
         SetNewDestination();
@@ -132,6 +135,7 @@ public class ProtectionBuilding : Item {
             return;
         }
 
+        target = null;
         float minValue = 1000000;
         Collider minColl = null;
         foreach (var collider in hitColliders)

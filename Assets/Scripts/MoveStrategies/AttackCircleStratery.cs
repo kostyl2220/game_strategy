@@ -32,7 +32,7 @@ namespace Assets.Scripts.MoveStrategies
             int X0 = X - Radius;
             int X1 = X + item.SizeX + Radius - 1;
 
-            for (int z = -Radius + 1; z < item.SizeZ + Radius - 1; z++)
+            for (int z = -Radius; z < item.SizeZ + Radius; z++)
             {
                 Vector3 leftPos = grid.GetPositionByXZ(X0 + 1, Z + z + 1, 0);
                 

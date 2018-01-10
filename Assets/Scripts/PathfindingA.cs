@@ -98,6 +98,12 @@ namespace Assets.Scripts
             return list;
         }
 
+        public bool HasPath(Vector2 StartPos, Vector2 EndPos)
+        {
+            List<Node> list = FindPath(StartPos, EndPos);
+            return list.Count != 0;           
+        }
+
         public List<Node> FindPath(Vector2 StartPos, Vector2 EndPos, float minPosDistance = 0f)
         {
             Opened.Clear();
